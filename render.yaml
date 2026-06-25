@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: rom-ludopata
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    healthCheckPath: /
+    numInstances: 1
