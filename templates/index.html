@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#020617">
+    <link rel="manifest" href="/manifest.json">
+    <!-- PWA iOS Support -->
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>ROM LUDOPATA 1.1 - Sharp Betting Engine</title>
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Marked.js for Markdown Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            /* Palette: Premium Dark Black & Neon Cobalt/Cyan Blue */
+            --bg-deep: #020617;
+            --bg-card: #0b1329;
+            --border-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            
+            --accent-blue: #2563eb;
+            --accent-blue-glow: rgba(37, 99, 235, 0.25);
+            --accent-cyan: #00f0ff;
+            --accent-cyan-glow: rgba(0, 240, 255, 0.2);
+            --accent-yellow: #ffc800;
+            --accent-yellow-glow: rgba(255, 200, 0, 0.2);
+            
+            --red-loss: #ef4444;
+            --blue-ecuabet: #1d4ed8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 5% 5%, rgba(37, 99, 235, 0.1) 0%, transparent 45%),
+                radial-gradient(circle at 95% 85%, rgba(0, 240, 255, 0.08) 0%, transparent 45%);
+            background-attachment: fixed;
+            padding: 1.5rem 1rem;
+        }
+
+        h1, h2, h3, h4, h5, .font-title {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Top Brand Header */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-card);
+            padding-bottom: 1rem;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-box {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-cyan) 100%);
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.4rem;
+            color: #fff;
+            box-shadow: 0 4px 15px var(--accent-blue-glow);
+        }
+
+        .brand-name {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #fff 40%, var(--accent-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-version {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+
+        .tagline {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tagline span {
+            color: var(--accent-cyan);
+            font-weight: 700;
+        }
+
+        /* Glassmorphic Base Cards */
+        .glass-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 14px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Tabs Navigation Bar (Bet365 design) */
+        .tabs-header {
+            display: flex;
+            border-bottom: 1px solid var(--border-card);
+            margin-bottom: 1.5rem;
+            gap: 0.5rem;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            color: var(--text-muted);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            color: #fff;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--accent-blue);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Form Layout */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 1.25rem;
+            align-items: end;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .input-group input {
+            background: #090e17;
+            border: 1px solid var(--border-card);
+            padding: 0.9rem 1.1rem;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 12px var(--accent-blue-glow);
+        }
+
+        .btn-analyze {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, #1d4ed8 100%);
+            border: none;
+            padding: 0.9rem 2.2rem;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px var(--accent-blue-glow);
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+        }
+
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 22px rgba(37, 99, 235, 0.5);
+        }
+
+        .btn-analyze:active {
+            transform: translateY(0);
+        }
+
+        /* Stepper */
+        .stepper {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.9rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .step-item {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .step-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid var(--border-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.4rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .step-item.active .step-circle {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: #fff;
+            box-shadow: 0 0 12px var(--accent-blue-glow);
+        }
+
+        .step-item.completed .step-circle {
+            background: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            color: #000;
+            box-shadow: 0 0 12px var(--accent-cyan-glow);
+        }
+
+        .step-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .step-item.active .step-label { color: #fff; }
+        .step-item.completed .step-label { color: var(--accent-cyan); }
+
+        /* Console Logs */
+        .console-container {
+            background: #04060b;
+            border: 1px solid var(--border-card);
+            border-radius: 10px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            height: 160px;
+            overflow-y: auto;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.9);
+        }
+
+        .console-line {
+            font-size: 0.85rem;
+            margin-bottom: 0.35rem;
+            color: #d1d5db;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .console-line.success { color: var(--accent-cyan); }
+        .console-line.info { color: #38bdf8; }
+        .console-line.error { color: var(--red-loss); }
+
+        /* Grid simulations */
+        .simulation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .sim-card {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--border-card);
+            border-radius: 8px;
+            padding: 0.75rem 0.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .sim-card.done {
+            border-color: var(--accent-blue);
+            background: rgba(37, 99, 235, 0.04);
+        }
+
+        .sim-card h4 {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .sim-score {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--accent-cyan);
+        }
+
+        /* Widgets visual dashboard */
+        .sharp-pick-banner {
+            border: 2px solid var(--accent-blue);
+            background: radial-gradient(circle at 0% 0%, rgba(37, 99, 235, 0.15) 0%, transparent 60%), #0b1329;
+            box-shadow: 0 0 20px var(--accent-blue-glow);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .pick-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pick-badge {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-cyan) 100%);
+            border-radius: 4px;
+            padding: 0.25rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 0.05em;
+        }
+
+        .pick-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+        }
+
+        .pick-stake-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 0.85rem;
+        }
+
+        .stake-info h5 {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .stake-amount {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--accent-cyan);
+        }
+
+        .match-header-widget {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+        }
+
+        .team-display {
+            flex: 1;
+        }
+
+        .team-display h3 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .vs-circle {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-card);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin: 0 1.5rem;
+        }
+
+        /* Grid */
+        .env-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .env-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .env-card {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--border-card);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .env-card-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .env-card-title svg {
+            width: 18px;
+            height: 18px;
+            fill: var(--accent-blue);
+        }
+
+        .env-item {
+            font-size: 0.9rem;
+            margin-bottom: 0.6rem;
+            color: var(--text-muted);
+        }
+
+        .env-item strong {
+            color: #fff;
+        }
+
+        .referee-badge-heavy {
+            background: var(--red-loss);
+            border-radius: 4px;
+            padding: 0.1rem 0.4rem;
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: #fff;
+            margin-left: 0.4rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* 1X2 */
+        .bar-1x2-title {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.03em;
+        }
+
+        .stacked-bar-container {
+            display: flex;
+            height: 38px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .bar-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 0.5rem;
+        }
+
+        .segment-local { background: var(--accent-cyan); color: #000; text-shadow: none; font-weight: 800; }
+        .segment-draw { background: #334155; }
+        .segment-visitor { background: var(--accent-blue); }
+
+        .odds-1x2-table {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .odds-cell {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-card);
+            border-radius: 8px;
+            padding: 0.85rem;
+        }
+
+        .odds-cell-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .odds-cell-prob {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .odds-cell-values {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+            line-height: 1.4;
+        }
+
+        .odds-cell-values span.fair { color: var(--accent-cyan); font-weight: 700; }
+        .odds-cell-values span.market { color: var(--accent-yellow); font-weight: 700; }
+
+        /* Over/Under Progress */
+        .markets-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .markets-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .market-progress-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .progress-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .progress-label-row strong {
+            color: #fff;
+        }
+
+        .bar-progress-container {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-progress-fill {
+            height: 100%;
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.6s ease-in-out;
+        }
+
+        .fill-orange { background: var(--accent-blue); }
+        .fill-green { background: var(--accent-cyan); }
+        .fill-yellow { background: #60a5fa; }
+
+        /* Handicap Box */
+        .handicap-container {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid var(--border-card);
+            border-radius: 10px;
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .handicap-info h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.2rem;
+        }
+
+        .handicap-val {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--accent-yellow);
+        }
+
+        /* Tactics */
+        .tactics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .tactics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .tactics-team-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-card);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .tactics-team-name {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 0.4rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tactics-formation-badge {
+            background: var(--blue-ecuabet);
+            border-radius: 4px;
+            padding: 0.1rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* Warnings */
+        .warning-banner {
+            background: rgba(255, 200, 0, 0.05);
+            border: 1px solid var(--accent-yellow);
+            color: var(--accent-yellow);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.25rem;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            box-shadow: 0 0 10px var(--accent-yellow-glow);
+        }
+
+        /* ==========================================================================
+           ROM LUDOPATA 1.1 NEW FEATURES CSS
+           ========================================================================== */
+
+        /* 1. FUT-style player cards */
+        .player-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .fut-card {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+            border: 2px solid #fbbf24;
+            border-radius: 12px;
+            padding: 0.85rem;
+            text-align: center;
+            position: relative;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(217, 119, 6, 0.4);
+            font-family: 'Outfit', sans-serif;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+        }
+
+        .fut-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 25px rgba(251, 191, 36, 0.5);
+        }
+
+        .fut-rating-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            padding-bottom: 0.4rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .fut-rating {
+            font-size: 1.8rem;
+            font-weight: 900;
+            line-height: 1;
+            color: #fff;
+        }
+
+        .fut-pos {
+            font-size: 0.75rem;
+            font-weight: 800;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 0.1rem 0.4rem;
+            border-radius: 3px;
+        }
+
+        .fut-name {
+            font-size: 0.95rem;
+            font-weight: 800;
+            margin: 0.5rem 0;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            letter-spacing: -0.01em;
+        }
+
+        .fut-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            background: rgba(0,0,0,0.15);
+            padding: 0.4rem;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+
+        .fut-stat-val {
+            color: var(--accent-cyan);
+        }
+
+        /* 2. Sliders custom design */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.08);
+            border-radius: 3px;
+            border: 1px solid rgba(255,255,255,0.02);
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -5px;
+            box-shadow: 0 0 8px var(--accent-cyan-glow);
+            transition: transform 0.1s ease;
+        }
+
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* 3. Visual Timeline for chronicle */
+        .timeline-container {
+            position: relative;
+            border-left: 2px dashed rgba(255, 255, 255, 0.08);
+            margin-left: 1rem;
+            padding-left: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .timeline-item {
+            position: relative;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid var(--border-card);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .timeline-badge {
+            position: absolute;
+            left: -2.35rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--accent-blue);
+            color: #fff;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 800;
+            border: 2px solid var(--bg-deep);
+            box-shadow: 0 0 5px var(--accent-blue-glow);
+        }
+
+        .timeline-item.goal {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.02);
+        }
+        .timeline-item.goal .timeline-badge {
+            background: var(--accent-cyan);
+            color: #000;
+            box-shadow: 0 0 5px var(--accent-cyan-glow);
+        }
+
+        .timeline-item.booking-yellow {
+            border-color: var(--accent-yellow);
+            background: rgba(255, 200, 0, 0.02);
+        }
+        .timeline-item.booking-yellow .timeline-badge {
+            background: var(--accent-yellow);
+            color: #000;
+            box-shadow: 0 0 5px var(--accent-yellow-glow);
+        }
+
+        .timeline-item.booking-red {
+            border-color: var(--red-loss);
+            background: rgba(239, 68, 68, 0.02);
+        }
+        .timeline-item.booking-red .timeline-badge {
+            background: var(--red-loss);
+            color: #fff;
+        }
+
+        /* Utilities */
+        .hidden { display: none !important; }
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Brand Header Bar -->
+        <header>
+            <div class="brand-logo">
+                <div class="logo-box">R</div>
+                <div>
+                    <div class="brand-name">ROM LUDOPATA <span class="brand-version">1.1</span></div>
+                </div>
+            </div>
+            <div class="tagline">
+                ANÁLISIS DE APUESTAS <span>SHARP BETTING ENGINE</span>
+            </div>
+        </header>
+
+        <!-- Navegación Superior Global (Tabs Principales) -->
+        <div class="tabs-header" style="margin-bottom: 2rem;">
+            <button class="tab-btn active" id="nav-btn-analyzer" onclick="switchMainTab('tab-analyzer-view')">ANALIZADOR DE PARTIDOS</button>
+            <button class="tab-btn" id="nav-btn-backtest" onclick="switchMainTab('tab-backtest-view')">DASHBOARD DE BACKTESTING</button>
+        </div>
+
+        <!-- SECCIÓN 1: ANALIZADOR EN VIVO -->
+        <div id="tab-analyzer-view" class="tab-content active">
+            <!-- Formulario Principal -->
+            <div class="glass-card">
+                <form id="analyze-form" class="form-grid">
+                    <div class="input-group">
+                        <label for="local-input">Equipo Local</label>
+                        <input type="text" id="local-input" placeholder="Ej. Real Madrid" required value="Real Madrid">
+                    </div>
+                    <div class="input-group">
+                        <label for="visitor-input">Equipo Visitante</label>
+                        <input type="text" id="visitor-input" placeholder="Ej. Barcelona" required value="Barcelona">
+                    </div>
+                    <button type="submit" id="btn-submit" class="btn-analyze">
+                        <span id="btn-text">Iniciar Análisis</span>
+                        <span id="btn-spinner" class="spinner hidden"></span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Panel de Carga y Progreso -->
+            <div id="progress-panel" class="glass-card hidden">
+                <h3 style="margin-bottom: 1.25rem; font-weight: 700;">PROCESANDO ANÁLISIS CUANTITATIVO</h3>
+                <!-- Stepper -->
+                <div class="stepper">
+                    <div class="step-item" id="step-1"><div class="step-circle">1</div><div class="step-label">Ingesta</div></div>
+                    <div class="step-item" id="step-2"><div class="step-circle">2</div><div class="step-label">Táctica</div></div>
+                    <div class="step-item" id="step-3"><div class="step-circle">3</div><div class="step-label">Simulaciones</div></div>
+                    <div class="step-item" id="step-4"><div class="step-circle">4</div><div class="step-label">Mercado</div></div>
+                    <div class="step-item" id="step-5"><div class="step-circle">5</div><div class="step-label">Reporte</div></div>
+                </div>
+                <!-- Terminal output -->
+                <div class="console-container" id="console-log">
+                    <div class="console-line info">&gt; Preparando el motor estadístico...</div>
+                </div>
+                <!-- Real-time grid of simulations -->
+                <h4 style="margin-bottom: 0.8rem; font-weight: 700; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Simulaciones Auditadas en Vivo</h4>
+                <div class="simulation-grid" id="sim-grid">
+                    <div class="sim-card" id="sim-card-1"><h4>Sim 1: Estándar</h4><div class="sim-score">-</div></div>
+                    <div class="sim-card" id="sim-card-2"><h4>Sim 2: Clima</h4><div class="sim-score">-</div></div>
+                    <div class="sim-card" id="sim-card-3"><h4>Sim 3: Árbitro</h4><div class="sim-score">-</div></div>
+                    <div class="sim-card" id="sim-card-4"><h4>Sim 4: Lesión</h4><div class="sim-score">-</div></div>
+                    <div class="sim-card" id="sim-card-5"><h4>Sim 5: Gol temprano</h4><div class="sim-score">-</div></div>
+                    <div class="sim-card" id="sim-card-6"><h4>Sim 6: Roja directa</h4><div class="sim-score">-</div></div>
+                    <div class="sim-card" id="sim-card-7"><h4>Sim 7: Presión</h4><div class="sim-score">-</div></div>
+                    <div class="sim-card" id="sim-card-8"><h4>Sim 8: Rumores</h4><div class="sim-score">-</div></div>
+                    <div class="sim-card" id="sim-card-9"><h4>Sim 9: Contra letal</h4><div class="sim-score">-</div></div>
+                    <div class="sim-card" id="sim-card-10"><h4>Sim 10: Tensión</h4><div class="sim-score">-</div></div>
+                </div>
+            </div>
+
+            <!-- Panel de Resultados -->
+            <div id="results-panel" class="glass-card hidden">
+                <div class="tabs-header">
+                    <button class="tab-btn active" onclick="switchResultTab('tab-dashboard', this)">DASHBOARD VISUAL</button>
+                    <button class="tab-btn" onclick="switchResultTab('tab-report', this)">INFORME REDACTADO</button>
+                    <button class="tab-btn" onclick="switchResultTab('tab-simulations', this)">10 SIMULACIONES</button>
+                </div>
+
+                <!-- CONTENIDO PESTAÑA 1: DASHBOARD VISUAL PREMIUM -->
+                <div id="tab-dashboard" class="tab-content active">
+                    <!-- Pick Recomendado (Faja Superior) -->
+                    <div class="glass-card sharp-pick-banner">
+                        <div class="pick-header">
+                            <span class="pick-badge">RECOMENDACIÓN FINAL (PICK DE VALOR)</span>
+                            <div id="dashboard-pick-roi" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-yellow);">VALOR DETECTADO</div>
+                        </div>
+                        <div class="pick-value" id="dashboard-pick-text">Cargando recomendación...</div>
+                        <div class="pick-stake-container">
+                            <div class="stake-info">
+                                <h5>GESTIÓN DE BANCA (KELLY CRITERION)</h5>
+                                <div style="font-size: 0.85rem; color: #fff; margin-top: 0.15rem;" id="dashboard-pick-desc">Tamaño de apuesta sugerido sobre tu bankroll</div>
+                            </div>
+                            <div class="stake-amount" id="dashboard-pick-stake">N/A</div>
+                        </div>
+                    </div>
+
+                    <!-- Sliders Simulador What-If (NUEVO ROM 1.1) -->
+                    <div class="glass-card" style="background: radial-gradient(circle at 100% 100%, rgba(0, 240, 255, 0.04) 0%, transparent 60%), #0b1329; border-color: var(--accent-cyan); padding: 1.25rem;">
+                        <h3 style="margin-bottom: 0.4rem; font-size: 1.1rem; color: var(--accent-cyan); text-transform: uppercase;">
+                            Simulador Interactivo "What-If" (Ajustes de Modelo en Vivo)
+                        </h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                            Arrastra los controles para modelar el impacto en vivo de factores ambientales, rigurosidad arbitral o localía nula. Las probabilidades de Poisson se recalcularán al instante en los widgets inferiores.
+                        </p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;" id="whatif-sliders-grid">
+                            <!-- Localia -->
+                            <div class="input-group">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">
+                                    <span>VENTAJA DE LOCALÍA</span>
+                                    <span id="slider-localia-val" style="color: var(--accent-cyan);">1.0x (Estándar)</span>
+                                </div>
+                                <input type="range" id="slider-localia" min="0" max="2" step="0.1" value="1" oninput="recalculateWhatIf()">
+                            </div>
+                            <!-- Clima -->
+                            <div class="input-group">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">
+                                    <span>SEVERIDAD DEL CLIMA</span>
+                                    <span id="slider-clima-val" style="color: var(--accent-cyan);">1.0x (Normal)</span>
+                                </div>
+                                <input type="range" id="slider-clima" min="0.5" max="1.5" step="0.1" value="1" oninput="recalculateWhatIf()">
+                            </div>
+                            <!-- Arbitro -->
+                            <div class="input-group">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">
+                                    <span>RIGUROSIDAD ÁRBITRO</span>
+                                    <span id="slider-arbitro-val" style="color: var(--accent-cyan);">1.0x (Normal)</span>
+                                </div>
+                                <input type="range" id="slider-arbitro" min="0.5" max="2" step="0.1" value="1" oninput="recalculateWhatIf()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Match Display Widget -->
+                    <div class="glass-card" style="background: rgba(0,0,0,0.15); border-color: rgba(255,255,255,0.02); padding: 1.25rem;">
+                        <div id="match-status-warning" class="warning-banner hidden"></div>
+                        <div class="match-header-widget">
+                            <div class="team-display"><h3 id="dashboard-local-name">Local</h3></div>
+                            <div class="vs-circle">VS</div>
+                            <div class="team-display"><h3 id="dashboard-visitor-name">Visitante</h3></div>
+                        </div>
+                    </div>
+
+                    <!-- Environment Details Grid -->
+                    <div class="env-grid">
+                        <div class="env-card">
+                            <div class="env-card-title">
+                                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                                Estadio y Condiciones Climáticas
+                            </div>
+                            <div class="env-item">Estadio: <strong id="env-stadium-name">Desconocido</strong></div>
+                            <div class="env-item">Capacidad: <strong id="env-stadium-capacity">N/A</strong></div>
+                            <div class="env-item">Césped: <strong id="env-stadium-grass">Natural</strong></div>
+                            <div class="env-item">Pronóstico Clima: <strong id="env-weather">Cargando...</strong></div>
+                            <div class="env-item" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                                Impacto Localía: <span id="env-stadium-impact" style="color: #d1d5db;">Cargando...</span>
+                            </div>
+                        </div>
+
+                        <div class="env-card">
+                            <div class="env-card-title">
+                                <svg viewBox="0 0 24 24"><path d="M17.1 2H6.9C5.3 2 4 3.3 4 4.9V13c0 4.4 3.6 8 8 8s8-3.6 8-8V4.9c0-1.6-1.3-2.9-2.9-2.9zM10 7h4v2h-4V7zm2 12c-3.3 0-6-2.7-6-6v-2h12v2c0 3.3-2.7 6-6 6z"/></svg>
+                                Historial y Rigurosidad del Árbitro
+                            </div>
+                            <div class="env-item">Designado: <strong id="env-ref-name">Desconocido</strong> <span id="env-ref-badge" class="referee-badge-heavy hidden">TARJETERO</span></div>
+                            <div class="env-item">Promedio de Tarjetas: <strong id="env-ref-cards">N/A</strong></div>
+                            <div class="env-item">Estilo de Arbitraje: <strong id="env-ref-style">Cargando...</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- 1X2 Probabilities Widget -->
+                    <div class="glass-card">
+                        <div class="bar-1x2-title">
+                            <span>PROBABILIDAD 1X2 SIMULADA POR MONTE CARLO</span>
+                            <span id="dashboard-1x2-fav" style="color: var(--accent-cyan);">FAVORITO</span>
+                        </div>
+                        
+                        <div class="stacked-bar-container">
+                            <div id="bar-1x2-local" class="bar-segment segment-local" style="width: 33.3%;">Local</div>
+                            <div id="bar-1x2-draw" class="bar-segment segment-draw" style="width: 33.3%;">Empate</div>
+                            <div id="bar-1x2-visitor" class="bar-segment segment-visitor" style="width: 33.3%;">Visita</div>
+                        </div>
+
+                        <div class="odds-1x2-table">
+                            <div class="odds-cell">
+                                <div class="odds-cell-label" id="lbl-cell-local">Local</div>
+                                <div class="odds-cell-prob" id="val-prob-local">33.3%</div>
+                                <div class="odds-cell-values">
+                                    Cuota Justa: <span class="fair" id="val-fair-local">3.00</span><br>
+                                    Casa (Bet365): <span class="market" id="val-market-local">2.90</span>
+                                </div>
+                            </div>
+                            <div class="odds-cell">
+                                <div class="odds-cell-label">Empate (X)</div>
+                                <div class="odds-cell-prob" id="val-prob-draw">33.3%</div>
+                                <div class="odds-cell-values">
+                                    Cuota Justa: <span class="fair" id="val-fair-draw">3.00</span><br>
+                                    Casa (Bet365): <span class="market" id="val-market-draw">3.30</span>
+                                </div>
+                            </div>
+                            <div class="odds-cell">
+                                <div class="odds-cell-label" id="lbl-cell-visitor">Visitante</div>
+                                <div class="odds-cell-prob" id="val-prob-visitor">33.3%</div>
+                                <div class="odds-cell-values">
+                                    Cuota Justa: <span class="fair" id="val-fair-visitor">3.00</span><br>
+                                    Casa (Bet365): <span class="market" id="val-market-visitor">2.95</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Over/Under y Hándicaps Grid -->
+                    <div class="markets-grid">
+                        <div class="env-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                            <div class="env-card-title">
+                                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-6h2v6zm0-8h-2V8h2v2z"/></svg>
+                                Goles y Hándicap Asiático
+                            </div>
+                            <div class="market-progress-group" style="margin-bottom: 1rem;">
+                                <div>
+                                    <div class="progress-label-row"><span>Más de 1.5 Goles</span><strong id="val-prob-over15">50%</strong></div>
+                                    <div class="bar-progress-container"><div id="bar-fill-over15" class="bar-progress-fill fill-green"></div></div>
+                                </div>
+                                <div>
+                                    <div class="progress-label-row"><span>Más de 2.5 Goles</span><strong id="val-prob-over25">50%</strong></div>
+                                    <div class="bar-progress-container"><div id="bar-fill-over25" class="bar-progress-fill fill-orange"></div></div>
+                                </div>
+                            </div>
+                            <div class="handicap-container">
+                                <div class="handicap-info">
+                                    <h4>Línea de Hándicap Asiático</h4>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">Cuota Estimada de la Casa</div>
+                                </div>
+                                <div>
+                                    <span class="handicap-val" id="dashboard-handicap-line">Local -0.5</span>
+                                    <span style="font-size: 1rem; color: #fff; margin-left: 0.4rem; font-weight: 700;" id="dashboard-handicap-odds">(1.95)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="env-card">
+                            <div class="env-card-title">
+                                <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                                Mercados Secundarios (Esquinas y Tarjetas)
+                            </div>
+                            <div class="market-progress-group">
+                                <div>
+                                    <div class="progress-label-row"><span>Más de 9.5 Tiros de Esquina</span><strong id="val-prob-over95corners">50%</strong></div>
+                                    <div class="bar-progress-container"><div id="bar-fill-over95corners" class="bar-progress-fill fill-yellow"></div></div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted); text-align: right; margin-top: 0.15rem;" id="val-avg-corners">Promedio: L: 5.5 | V: 4.5</div>
+                                </div>
+                                <div>
+                                    <div class="progress-label-row"><span>Más de 4.5 Tarjetas</span><strong id="val-prob-over45cards">50%</strong></div>
+                                    <div class="bar-progress-container"><div id="bar-fill-over45cards" class="bar-progress-fill fill-orange"></div></div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted); text-align: right; margin-top: 0.15rem;" id="val-avg-cards">Promedio: 4.5 amonestaciones</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tactical Analysis Details -->
+                    <div class="glass-card">
+                        <h3 id="tactics-header-title" style="margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; font-size: 1.1rem; color: var(--accent-cyan); text-transform: uppercase;">
+                            Análisis Táctico de Alineaciones
+                        </h3>
+                        <div id="tactics-warning-box" class="warning-banner hidden"></div>
+                        <div class="tactics-grid">
+                            <div class="tactics-team-card">
+                                <div class="tactics-team-name">
+                                    <span id="tactics-local-label">Local</span>
+                                    <span class="tactics-formation-badge" id="tactics-local-form">N/A</span>
+                                </div>
+                                <div style="font-size: 0.85rem; color: #d1d5db;" id="tactics-local-style">Estilo cargando...</div>
+                            </div>
+                            <div class="tactics-team-card">
+                                <div class="tactics-team-name">
+                                    <span id="tactics-visitor-label">Visitante</span>
+                                    <span class="tactics-formation-badge" id="tactics-visitor-form">N/A</span>
+                                </div>
+                                <div style="font-size: 0.85rem; color: #d1d5db;" id="tactics-visitor-style">Estilo cargando...</div>
+                            </div>
+                        </div>
+
+                        <!-- FUT-style Star Players Grid (NUEVO ROM 1.1) -->
+                        <h4 style="margin: 1.5rem 0 0.8rem; font-size: 0.95rem; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 0.03em;">
+                            Jugadores Clave Destacados (FUT Star Ratings)
+                        </h4>
+                        <div class="player-cards-grid" id="star-players-container">
+                            <!-- Injected dynamically in updateVisualDashboard -->
+                        </div>
+
+                        <div style="font-size: 0.9rem; margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem;">
+                            <p style="margin-bottom: 0.5rem;"><strong style="color: #fff;">Interacción y Emparejamiento:</strong> <span id="tactics-matchup" style="color: var(--text-muted);">Cargando...</span></p>
+                            <p style="margin-bottom: 0.5rem;"><strong style="color: #fff;">Zonas Críticas:</strong> <span id="tactics-zones" style="color: var(--text-muted);">Cargando...</span></p>
+                            <p style="margin-bottom: 0.5rem;"><strong style="color: #fff;">Ventaja Táctica:</strong> <span id="tactics-advantage" style="color: var(--accent-green); font-weight: 600;">Cargando...</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTENIDO PESTAÑA 2: INFORME REDACTADO EN ESPAÑOL -->
+                <div id="tab-report" class="tab-content" style="line-height: 1.7; font-size: 1.05rem;"></div>
+
+                <!-- CONTENIDO PESTAÑA 3: 10 SIMULACIONES DETALLADAS (Visual Timeline en ROM 1.1) -->
+                <div id="tab-simulations" class="tab-content">
+                    <div id="simulations-detailed-list" style="display: flex; flex-direction: column; gap: 1.5rem;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 2: DASHBOARD DE BACKTESTING (NUEVO ROM 1.1) -->
+        <div id="tab-backtest-view" class="tab-content">
+            <div class="glass-card" style="border-color: var(--accent-blue);">
+                <h2 style="margin-bottom: 0.5rem; font-weight: 800; font-size: 1.4rem;">
+                    Dashboard de Rendimiento de Backtesting (Historial del Modelo)
+                </h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                    Muestra las estadísticas de rentabilidad histórica y auditoría del modelo cuantitativo Dixon-Coles calibrado sobre datos reales de LaLiga y Premier League.
+                </p>
+                
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                    <button class="btn-analyze" id="btn-backtest-laliga" onclick="showBacktestLeague('laliga')" style="background: var(--accent-blue);">LaLiga EA Sports</button>
+                    <button class="btn-analyze" id="btn-backtest-premier" onclick="showBacktestLeague('premier')" style="background: rgba(255,255,255,0.05); box-shadow: none;">Premier League</button>
+                </div>
+
+                <!-- Backtesting Grid Metrics -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;" id="backtest-metrics-grid">
+                    <div class="odds-cell" style="text-align: center;">
+                        <div class="odds-cell-label">Retorno de Inversión (ROI)</div>
+                        <div class="odds-cell-prob" id="backtest-roi" style="color: var(--accent-cyan); font-size: 1.6rem;">0.0%</div>
+                    </div>
+                    <div class="odds-cell" style="text-align: center;">
+                        <div class="odds-cell-label">Efectividad (Hit Rate)</div>
+                        <div class="odds-cell-prob" id="backtest-hitrate" style="color: #60a5fa; font-size: 1.6rem;">0.0%</div>
+                    </div>
+                    <div class="odds-cell" style="text-align: center;">
+                        <div class="odds-cell-label">Ganancia Neta</div>
+                        <div class="odds-cell-prob" id="backtest-profit" style="color: var(--accent-yellow); font-size: 1.6rem;">$0.00</div>
+                    </div>
+                    <div class="odds-cell" style="text-align: center;">
+                        <div class="odds-cell-label">Drawdown Máximo</div>
+                        <div class="odds-cell-prob" id="backtest-drawdown" style="color: var(--red-loss); font-size: 1.6rem;">0.0%</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;" id="backtest-details-block">
+                    <!-- Apuestas Recientes -->
+                    <div class="env-card">
+                        <div class="env-card-title">Historial de Apuestas Recientes</div>
+                        <div style="overflow-x: auto; max-height: 350px;">
+                            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;" id="backtest-table">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--border-card); color: var(--text-muted); font-weight: bold;">
+                                        <th style="padding: 0.6rem 0.5rem;">Fecha</th>
+                                        <th style="padding: 0.6rem 0.5rem;">Partido</th>
+                                        <th style="padding: 0.6rem 0.5rem;">Apuesta</th>
+                                        <th style="padding: 0.6rem 0.5rem;">Cuota</th>
+                                        <th style="padding: 0.6rem 0.5rem;">Resultado</th>
+                                        <th style="padding: 0.6rem 0.5rem;">Ganancia</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="backtest-table-body">
+                                    <!-- Injected dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Resumen Operativo -->
+                    <div class="env-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div class="env-card-title">Resumen Operativo</div>
+                            <div class="env-item">Apuestas Totales: <strong id="backtest-total-bets">0</strong></div>
+                            <div class="env-item">Apuestas Ganadas: <strong id="backtest-won-bets">0</strong></div>
+                            <div class="env-item">Total Invertido: <strong id="backtest-total-invested">$0.00</strong></div>
+                            <div class="env-item">Banca Final: <strong id="backtest-final-bankroll" style="color: var(--accent-cyan);">$0.00</strong></div>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--border-card); padding-top: 0.75rem;">
+                            * Rendimiento histórico del modelo calibrado con Dixon-Coles y Monte Carlo. Stake calculado dinámicamente con el criterio de Kelly.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('analyze-form');
+        const btnSubmit = document.getElementById('btn-submit');
+        const btnText = document.getElementById('btn-text');
+        const btnSpinner = document.getElementById('btn-spinner');
+        const progressPanel = document.getElementById('progress-panel');
+        const resultsPanel = document.getElementById('results-panel');
+        const consoleLog = document.getElementById('console-log');
+        const simGrid = document.getElementById('sim-grid');
+
+        let eventSource = null;
+        let activeAnalysisData = null; // Store complete data for live client-side sliders recalculating
+        let backtestData = null; // Store fetched backtesting results
+
+        // 1. Tab switching logic
+        function switchMainTab(tabId) {
+            document.querySelectorAll('.tabs-header > .tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            if (tabId === 'tab-analyzer-view') {
+                document.getElementById('nav-btn-analyzer').classList.add('active');
+            } else {
+                document.getElementById('nav-btn-backtest').classList.add('active');
+                loadBacktestingData();
+            }
+            document.querySelectorAll('.container > .tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function switchResultTab(tabId, btn) {
+            document.querySelectorAll('#results-panel > .tabs-header > .tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('#results-panel > .tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // 2. Fetch and render backtesting results
+        function loadBacktestingData() {
+            if (backtestData) return; // cache loaded
+            
+            fetch('/api/backtest')
+                .then(res => {
+                    if (!res.ok) throw new Error("No se pudo cargar el backtesting.");
+                    return res.json();
+                })
+                .then(data => {
+                    backtestData = data;
+                    showBacktestLeague('laliga'); // Show LaLiga by default
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('backtest-details-block').innerHTML = `<div class="warning-banner" style="grid-column: span 2;">⚠️ Error al cargar el backtesting histórico de apuestas. Por favor asegúrate de que backtest_summary.json existe.</div>`;
+                });
+        }
+
+        function showBacktestLeague(leagueKey) {
+            if (!backtestData || !backtestData[leagueKey]) return;
+
+            const league = backtestData[leagueKey];
+            
+            // Toggle active buttons style
+            const btnLaLiga = document.getElementById('btn-backtest-laliga');
+            const btnPremier = document.getElementById('btn-backtest-premier');
+            if (leagueKey === 'laliga') {
+                btnLaLiga.style.background = 'var(--accent-blue)';
+                btnLaLiga.style.boxShadow = '';
+                btnPremier.style.background = 'rgba(255,255,255,0.05)';
+                btnPremier.style.boxShadow = 'none';
+            } else {
+                btnPremier.style.background = 'var(--accent-blue)';
+                btnPremier.style.boxShadow = '';
+                btnLaLiga.style.background = 'rgba(255,255,255,0.05)';
+                btnLaLiga.style.boxShadow = 'none';
+            }
+
+            // Fill Metrics
+            document.getElementById('backtest-roi').textContent = `${league.roi_porcentaje.toFixed(1)}%`;
+            document.getElementById('backtest-hitrate').textContent = `${league.efectividad_porcentaje.toFixed(1)}%`;
+            document.getElementById('backtest-profit').textContent = `$${league.ganancia_neta.toFixed(2)}`;
+            document.getElementById('backtest-drawdown').textContent = `${league.drawdown_maximo_porcentaje.toFixed(1)}%`;
+            
+            document.getElementById('backtest-total-bets').textContent = league.apuestas_totales;
+            document.getElementById('backtest-won-bets').textContent = league.apuestas_ganadas;
+            document.getElementById('backtest-total-invested').textContent = `$${league.total_apostado.toFixed(2)}`;
+            document.getElementById('backtest-final-bankroll').textContent = `$${league.banca_final.toFixed(2)}`;
+
+            // Build Table
+            const tbody = document.getElementById('backtest-table-body');
+            tbody.innerHTML = "";
+            
+            league.historial_reciente.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid rgba(255,255,255,0.03)';
+                
+                const resultText = item.result === 'H' ? 'Local' : (item.result === 'A' ? 'Visita' : 'Empate');
+                const betText = item.bet === 'H' ? 'Local (1)' : (item.bet === 'A' ? 'Visita (2)' : 'Empate (X)');
+                const isWon = item.result === item.bet;
+                
+                tr.innerHTML = `
+                    <td style="padding: 0.6rem 0.5rem; color: var(--text-muted);">${item.date}</td>
+                    <td style="padding: 0.6rem 0.5rem; font-weight: 600;">${item.match}</td>
+                    <td style="padding: 0.6rem 0.5rem;">${betText}</td>
+                    <td style="padding: 0.6rem 0.5rem; font-weight: bold; color: var(--accent-cyan);">${item.odds.toFixed(2)}</td>
+                    <td style="padding: 0.6rem 0.5rem;"><span style="color: ${isWon ? 'var(--accent-cyan)' : 'var(--text-muted)'}">${resultText}</span></td>
+                    <td style="padding: 0.6rem 0.5rem; font-weight: bold; color: ${item.profit_usd > 0 ? 'var(--accent-cyan)' : 'var(--red-loss)'}">
+                        ${item.profit_usd > 0 ? '+' : ''}$${item.profit_usd.toFixed(2)}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 3. Analyze form and SSE listener
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const local = document.getElementById('local-input').value.trim();
+            const visitor = document.getElementById('visitor-input').value.trim();
+
+            if (!local || !visitor) return;
+
+            // Reset UI for load
+            btnSubmit.disabled = true;
+            btnText.textContent = "Procesando...";
+            btnSpinner.classList.remove('hidden');
+            progressPanel.classList.remove('hidden');
+            resultsPanel.classList.add('hidden');
+            consoleLog.innerHTML = `<div class="console-line info">&gt; Iniciando análisis de alta eficiencia para ${local} vs ${visitor}...</div>`;
+            
+            document.getElementById('match-status-warning').classList.add('hidden');
+            document.getElementById('tactics-warning-box').classList.add('hidden');
+            
+            document.querySelectorAll('.step-item').forEach(el => {
+                el.classList.remove('active', 'completed');
+            });
+            document.getElementById('step-1').classList.add('active');
+
+            for (let i = 1; i <= 10; i++) {
+                const card = document.getElementById(`sim-card-${i}`);
+                card.classList.remove('done');
+                card.querySelector('.sim-score').textContent = "-";
+            }
+
+            // Reset sliders to 1.0x
+            document.getElementById('slider-localia').value = 1;
+            document.getElementById('slider-clima').value = 1;
+            document.getElementById('slider-arbitro').value = 1;
+            document.getElementById('slider-localia-val').textContent = "1.0x (Estándar)";
+            document.getElementById('slider-clima-val').textContent = "1.0x (Normal)";
+            document.getElementById('slider-arbitro-val').textContent = "1.0x (Normal)";
+
+            const url = `/api/analyze?local=${encodeURIComponent(local)}&visitor=${encodeURIComponent(visitor)}`;
+            if (eventSource) eventSource.close();
+            
+            eventSource = new EventSource(url);
+
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                if (data.status === "error") {
+                    addConsoleLine(data.message, "error");
+                    resetButton();
+                    eventSource.close();
+                    return;
+                }
+
+                addConsoleLine(data.message, data.status === "simulando_progreso" ? "success" : "info");
+                updateStepper(data.step);
+
+                if (data.status === "simulando_progreso") {
+                    const sim = data.simulacion;
+                    const card = document.getElementById(`sim-card-${sim.simulacion_id}`);
+                    if (card) {
+                        card.classList.add('done');
+                        card.querySelector('.sim-score').textContent = data.resultado;
+                    }
+                }
+
+                if (data.status === "completado") {
+                    activeAnalysisData = data; // Cache data globally to allow what-if recalculation
+                    document.querySelectorAll('.step-item').forEach(el => {
+                        el.classList.remove('active');
+                        el.classList.add('completed');
+                    });
+                    
+                    updateVisualDashboard(data, local, visitor);
+                    
+                    const htmlReport = marked.parse(data.reporte);
+                    document.getElementById('tab-report').innerHTML = htmlReport;
+
+                    renderDetailedSimulations(data.simulaciones, local, visitor);
+
+                    resultsPanel.classList.remove('hidden');
+                    resetButton();
+                    eventSource.close();
+                    resultsPanel.scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+
+            eventSource.onerror = function(err) {
+                addConsoleLine("Error de comunicación en tiempo real. Reconectando...", "error");
+                resetButton();
+                eventSource.close();
+            };
+        });
+
+        function addConsoleLine(text, type = "info") {
+            const line = document.createElement('div');
+            line.className = `console-line ${type}`;
+            line.innerHTML = `&gt; ${text}`;
+            consoleLog.appendChild(line);
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+        }
+
+        function updateStepper(step) {
+            if (!step) return;
+            for (let i = 1; i <= 5; i++) {
+                const item = document.getElementById(`step-${i}`);
+                if (i < step) {
+                    item.classList.remove('active');
+                    item.classList.add('completed');
+                } else if (i === step) {
+                    item.classList.remove('completed');
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active', 'completed');
+                }
+            }
+        }
+
+        function resetButton() {
+            btnSubmit.disabled = false;
+            btnText.textContent = "Iniciar Análisis";
+            btnSpinner.classList.add('hidden');
+        }
+
+        // 4. Render Dashboard and Stars (ROM 1.1 FUT FUT Cards)
+        function updateVisualDashboard(data, local, visitor) {
+            const env = data.environment || {
+                "estadio_nombre": "Desconocido",
+                "estadio_capacidad": "N/A",
+                "estadio_cesped": "Natural",
+                "estadio_localia_impacto": "No hay información disponible.",
+                "clima_pronostico": "Despejado / Clima estándar",
+                "arbitro_nombre": "Desconocido",
+                "arbitro_promedio_tarjetas": "N/A",
+                "arbitro_tarjetero": "No",
+                "arbitro_estilo": "No hay información disponible."
+            };
+            const tactics = data.tactics || {};
+            const stats = data.market_analysis.estadisticas_simuladas || {};
+            const market = data.market_analysis.datos_mercado || {};
+
+            // 1. Names
+            document.getElementById('dashboard-local-name').textContent = local;
+            document.getElementById('dashboard-visitor-name').textContent = visitor;
+            
+            // 2. Stadium
+            document.getElementById('env-stadium-name').textContent = env.estadio_nombre;
+            document.getElementById('env-stadium-capacity').textContent = env.estadio_capacidad;
+            document.getElementById('env-stadium-grass').textContent = env.estadio_cesped;
+            document.getElementById('env-weather').textContent = env.clima_pronostico;
+            document.getElementById('env-stadium-impact').textContent = env.estadio_localia_impacto;
+
+            // 3. Referee
+            document.getElementById('env-ref-name').textContent = env.arbitro_nombre;
+            document.getElementById('env-ref-cards').textContent = env.arbitro_promedio_tarjetas;
+            document.getElementById('env-ref-style').textContent = env.arbitro_estilo;
+            
+            const refBadge = document.getElementById('env-ref-badge');
+            if (env.arbitro_tarjetero === "Sí" || env.arbitro_tarjetero === "SI" || env.arbitro_tarjetero === "si") {
+                refBadge.classList.remove('hidden');
+            } else {
+                refBadge.classList.add('hidden');
+            }
+
+            // 4. Recalculate and fill Poisson Widgets
+            renderPoissonOutput(stats, market, local, visitor);
+
+            // 5. Tactics
+            document.getElementById('tactics-local-label').textContent = local;
+            document.getElementById('tactics-local-form').textContent = tactics.local_formacion || "N/A";
+            document.getElementById('tactics-local-style').textContent = tactics.local_estilo || "Estilo estándar.";
+
+            document.getElementById('tactics-visitor-label').textContent = visitor;
+            document.getElementById('tactics-visitor-form').textContent = tactics.visitante_formacion || "N/A";
+            document.getElementById('tactics-visitor-style').textContent = tactics.visitante_estilo || "Estilo estándar.";
+
+            document.getElementById('tactics-matchup').textContent = tactics.analisis_enfrentamiento || "Sin detalles.";
+            document.getElementById('tactics-zones').textContent = tactics.zonas_clave || "Medio campo.";
+            document.getElementById('tactics-advantage').textContent = tactics.ventaja_tactica || "Ninguna clara.";
+
+            // Lineups Banners
+            const isOfficial = tactics.hasOwnProperty('alineaciones_oficiales') ? tactics.alineaciones_oficiales : true;
+            const matchWarningEl = document.getElementById('match-status-warning');
+            const tacticsWarningEl = document.getElementById('tactics-warning-box');
+            const tacticsHeaderEl = document.getElementById('tactics-header-title');
+
+            if (!isOfficial) {
+                const warningMsg = tactics.advertencia_lineas || "⚠️ Alineaciones del último partido (No Oficiales)";
+                matchWarningEl.textContent = warningMsg;
+                matchWarningEl.classList.remove('hidden');
+                tacticsWarningEl.textContent = warningMsg;
+                tacticsWarningEl.classList.remove('hidden');
+                if (tacticsHeaderEl) tacticsHeaderEl.textContent = "Análisis Táctico (Alineaciones de Referencia)";
+            } else {
+                matchWarningEl.classList.add('hidden');
+                tacticsWarningEl.classList.add('hidden');
+                if (tacticsHeaderEl) tacticsHeaderEl.textContent = "Análisis Táctico (Alineaciones Oficiales)";
+            }
+
+            // 6. Generate and Render Star FUT Cards (NUEVO ROM 1.1)
+            const localLineup = data.reporte.match(/Alineación probable.*?(?=\n\n|\n\*)/i) ? data.reporte.match(/Alineación probable.*?(?=\n\n|\n\*)/i)[0] : "";
+            const visitorLineup = data.reporte.match(/Alineación probable Visitante.*?(?=\n\n|\n\*)/i) ? data.reporte.match(/Alineación probable Visitante.*?(?=\n\n|\n\*)/i)[0] : "";
+            const stars = getStarPlayers(localLineup, visitorLineup, local, visitor);
+            renderFUTStars(stars.localStars, stars.visitorStars, local, visitor);
+        }
+
+        // Star player parser and renderer
+        function getStarPlayers(localLineupStr, visitorLineupStr, localTeam, visitorTeam) {
+            const database = {
+                "real madrid": [
+                    {name: "Mbappé", pos: "DEL", att: 94, def: 35},
+                    {name: "Vini Jr", pos: "DEL", att: 93, def: 30},
+                    {name: "Bellingham", pos: "MC", att: 90, def: 78},
+                    {name: "Valverde", pos: "MC", att: 88, def: 80},
+                    {name: "Courtois", pos: "POR", att: 5, def: 90}
+                ],
+                "barcelona": [
+                    {name: "Lewandowski", pos: "DEL", att: 90, def: 32},
+                    {name: "Lamine Yamal", pos: "DEL", att: 89, def: 35},
+                    {name: "Raphinha", pos: "DEL", att: 86, def: 40},
+                    {name: "Pedri", pos: "MC", att: 86, def: 70},
+                    {name: "Ter Stegen", pos: "POR", att: 5, def: 88}
+                ],
+                "argentina": [
+                    {name: "Lionel Messi", pos: "DEL", att: 92, def: 30},
+                    {name: "Julián Álvarez", pos: "DEL", att: 86, def: 45},
+                    {name: "Mac Allister", pos: "MC", att: 84, def: 75},
+                    {name: "E. Martínez", pos: "POR", att: 5, def: 87}
+                ],
+                "francia": [
+                    {name: "K. Mbappé", pos: "DEL", att: 94, def: 35},
+                    {name: "Griezmann", pos: "DEL", att: 88, def: 65},
+                    {name: "Tchouaméni", pos: "MC", att: 82, def: 84},
+                    {name: "Maignan", pos: "POR", att: 5, def: 86}
+                ],
+                "mexico": [
+                    {name: "Santi Giménez", pos: "DEL", att: 82, def: 30},
+                    {name: "Edson Álvarez", pos: "MC", att: 76, def: 84},
+                    {name: "Luis Chávez", pos: "MC", att: 78, def: 72},
+                    {name: "Malagón", pos: "POR", att: 5, def: 80}
+                ]
+            };
+            
+            function parseStarPlayers(lineupStr, teamName) {
+                const teamKey = teamName.toLowerCase().replace(/[áéíóú]/g, function(match) {
+                    return { 'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u' }[match];
+                }).trim();
+                
+                let stars = [];
+                for (let key in database) {
+                    if (teamKey.includes(key) || key.includes(teamKey)) {
+                        stars = [...database[key]];
+                        break;
+                    }
+                }
+                
+                if (stars.length < 3) {
+                    const cleanLineup = lineupStr.replace(/confirmada|oficial|titular|hoy|alineacion/gi, '');
+                    const names = cleanLineup.split(/[,;.]/).map(n => n.replace(/\(gk\)|\(c\)|\bgk\b|\bc\b/gi, '').trim()).filter(n => n.length > 3);
+                    
+                    names.forEach(name => {
+                        if (stars.find(s => s.name.toLowerCase().includes(name.toLowerCase()))) return;
+                        
+                        let hash = 0;
+                        for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i);
+                        
+                        const pos = ["DEL", "MC", "DEF", "POR"][hash % 4];
+                        let att = 75 + (hash % 15);
+                        let def = 40 + (hash % 45);
+                        if (pos === "POR") { att = 5; def = 75 + (hash % 15); }
+                        else if (pos === "DEF") { att = 40 + (hash % 20); def = 75 + (hash % 15); }
+                        else if (pos === "DEL") { att = 78 + (hash % 15); def = 30 + (hash % 15); }
+                        
+                        stars.push({ name, pos, att, def });
+                    });
+                }
+                return stars.slice(0, 3);
+            }
+            
+            return {
+                localStars: parseStarPlayers(localLineupStr, localTeam),
+                visitorStars: parseStarPlayers(visitorLineupStr, visitorTeam)
+            };
+        }
+
+        function renderFUTStars(localStars, visitorStars, local, visitor) {
+            const container = document.getElementById('star-players-container');
+            container.innerHTML = "";
+
+            function createCard(p, teamName) {
+                const card = document.createElement('div');
+                card.className = "fut-card";
+                
+                const ovr = Math.round((p.att + p.def) / 2);
+                const pac = 60 + (p.att % 35);
+                const sho = p.att;
+                const pas = 65 + (p.def % 30);
+                const dri = 70 + (p.att % 25);
+                const df = p.def;
+                const phy = 70 + (p.def % 20);
+                
+                card.innerHTML = `
+                    <div class="fut-rating-row">
+                        <div class="fut-rating">${ovr}</div>
+                        <div class="fut-pos">${p.pos}</div>
+                    </div>
+                    <div class="fut-name">${p.name}</div>
+                    <div style="font-size: 0.65rem; color: rgba(255,255,255,0.75); margin-bottom: 0.5rem; text-transform: uppercase;">${teamName}</div>
+                    <div class="fut-stats-grid">
+                        <div>PAC: <span class="fut-stat-val">${pac}</span></div>
+                        <div>SHO: <span class="fut-stat-val">${sho}</span></div>
+                        <div>PAS: <span class="fut-stat-val">${pas}</span></div>
+                        <div>DRI: <span class="fut-stat-val">${dri}</span></div>
+                        <div>DEF: <span class="fut-stat-val">${df}</span></div>
+                        <div>PHY: <span class="fut-stat-val">${phy}</span></div>
+                    </div>
+                `;
+                return card;
+            }
+
+            localStars.forEach(p => container.appendChild(createCard(p, local)));
+            visitorStars.forEach(p => container.appendChild(createCard(p, visitor)));
+        }
+
+        // 5. Poisson Mathematics Helpers
+        function poissonPdf(k, lambda) {
+            let p = Math.exp(-lambda);
+            for (let i = 1; i <= k; i++) {
+                p *= lambda / i;
+            }
+            return p;
+        }
+
+        function cumulativePoisson(threshold, lambda) {
+            let sum = 0;
+            for (let k = 0; k <= threshold; k++) {
+                sum += poissonPdf(k, lambda);
+            }
+            return 1 - sum;
+        }
+
+        function calculatePoisson1X2(lambdaL, lambdaV) {
+            let pL = 0, pD = 0, pV = 0;
+            for (let i = 0; i <= 10; i++) {
+                let pdfL = poissonPdf(i, lambdaL);
+                for (let j = 0; j <= 10; j++) {
+                    let pdfV = poissonPdf(j, lambdaV);
+                    let joint = pdfL * pdfV;
+                    if (i > j) pL += joint;
+                    else if (i === j) pD += joint;
+                    else pV += joint;
+                }
+            }
+            let sum = pL + pD + pV;
+            return {
+                local: (pL / sum) * 100,
+                draw: (pD / sum) * 100,
+                visitor: (pV / sum) * 100
+            };
+        }
+
+        // Render Poisson Widgets
+        function renderPoissonOutput(stats, market, local, visitor) {
+            const pLoc = stats.probabilidad_local_porcentaje;
+            const pDra = stats.probabilidad_empate_porcentaje;
+            const pVis = stats.probabilidad_visitante_porcentaje;
+
+            // Progress segments
+            document.getElementById('bar-1x2-local').style.width = `${pLoc}%`;
+            document.getElementById('bar-1x2-local').textContent = `${local}: ${pLoc.toFixed(1)}%`;
+            document.getElementById('bar-1x2-draw').style.width = `${pDra}%`;
+            document.getElementById('bar-1x2-draw').textContent = `Empate: ${pDra.toFixed(1)}%`;
+            document.getElementById('bar-1x2-visitor').style.width = `${pVis}%`;
+            document.getElementById('bar-1x2-visitor').textContent = `${visitor}: ${pVis.toFixed(1)}%`;
+
+            // Favorite title
+            const favEl = document.getElementById('dashboard-1x2-fav');
+            if (pLoc > pVis && pLoc > pDra) {
+                favEl.textContent = `FAVORITO: ${local.toUpperCase()}`;
+                favEl.style.color = "var(--accent-cyan)";
+            } else if (pVis > pLoc && pVis > pDra) {
+                favEl.textContent = `FAVORITO: ${visitor.toUpperCase()}`;
+                favEl.style.color = "var(--accent-blue)";
+            } else {
+                favEl.textContent = "SIN FAVORITO CLARO";
+                favEl.style.color = "var(--text-muted)";
+            }
+
+            // Cell prob and fair odds
+            document.getElementById('val-prob-local').textContent = `${pLoc.toFixed(1)}%`;
+            document.getElementById('val-prob-draw').textContent = `${pDra.toFixed(1)}%`;
+            document.getElementById('val-prob-visitor').textContent = `${pVis.toFixed(1)}%`;
+
+            document.getElementById('val-fair-local').textContent = (100 / pLoc).toFixed(2);
+            document.getElementById('val-fair-draw').textContent = (100 / pDra).toFixed(2);
+            document.getElementById('val-fair-visitor').textContent = (100 / pVis).toFixed(2);
+
+            document.getElementById('val-market-local').textContent = market.cuota_local_estimada ? parseFloat(market.cuota_local_estimada).toFixed(2) : "N/A";
+            document.getElementById('val-market-draw').textContent = market.cuota_empate_estimada ? parseFloat(market.cuota_empate_estimada).toFixed(2) : "N/A";
+            document.getElementById('val-market-visitor').textContent = market.cuota_visitante_estimada ? parseFloat(market.cuota_visitante_estimada).toFixed(2) : "N/A";
+
+            // Over/Under Goals
+            const pO15 = stats.probabilidad_over_1_5_porcentaje;
+            const pO25 = stats.probabilidad_over_2_5_porcentaje;
+            document.getElementById('val-prob-over15').textContent = `${pO15.toFixed(1)}%`;
+            document.getElementById('bar-fill-over15').style.width = `${pO15}%`;
+            document.getElementById('val-prob-over25').textContent = `${pO25.toFixed(1)}%`;
+            document.getElementById('bar-fill-over25').style.width = `${pO25}%`;
+
+            // Over/Under Corners
+            const pCorners = stats.probabilidad_over_9_5_corners_porcentaje;
+            document.getElementById('val-prob-over95corners').textContent = `${pCorners.toFixed(1)}%`;
+            document.getElementById('bar-fill-over95corners').style.width = `${pCorners}%`;
+            const avgCLoc = stats.promedio_tiros_esquina_local || 5.0;
+            const avgCVis = stats.promedio_tiros_esquina_visitante || 4.5;
+            document.getElementById('val-avg-corners').textContent = `Promedio: L: ${avgCLoc.toFixed(1)} | V: ${avgCVis.toFixed(1)}`;
+
+            // Over/Under Cards
+            const pCards = stats.probabilidad_over_4_5_tarjetas_porcentaje;
+            document.getElementById('val-prob-over45cards').textContent = `${pCards.toFixed(1)}%`;
+            document.getElementById('bar-fill-over45cards').style.width = `${pCards}%`;
+            const avgCards = stats.promedio_tarjetas_amarillas || 4.5;
+            document.getElementById('val-avg-cards').textContent = `Promedio: ${avgCards.toFixed(1)} amonestaciones`;
+
+            // Kelly pick suggestions
+            document.getElementById('dashboard-pick-text').textContent = market.recomendacion_apuesta;
+            document.getElementById('dashboard-pick-stake').textContent = market.recomendacion_apuesta.includes("%") ? `Kelly Stake: ${market.recomendacion_apuesta.match(/(\d+(?:\.\d+)?)\s*%/)[0]}` : "1.5% Kelly (Sugerido)";
+            document.getElementById('dashboard-handicap-line').textContent = market.handicap_asiatico_linea || "N/A";
+            document.getElementById('dashboard-handicap-odds').textContent = `(${market.handicap_asiatico_cuota || "N/A"})`;
+        }
+
+        // 6. Recalculate Live sliders What-If (NUEVO ROM 1.1)
+        function recalculateWhatIf() {
+            if (!activeAnalysisData) return;
+
+            // Multipliers
+            const multLocalia = parseFloat(document.getElementById('slider-localia').value);
+            const multClima = parseFloat(document.getElementById('slider-clima').value);
+            const multArbitro = parseFloat(document.getElementById('slider-arbitro').value);
+
+            // Display labels
+            document.getElementById('slider-localia-val').textContent = `${multLocalia.toFixed(1)}x ${multLocalia === 1 ? '(Estándar)' : (multLocalia === 0 ? '(Desactivada)' : '(Modificada)')}`;
+            document.getElementById('slider-clima-val').textContent = `${multClima.toFixed(1)}x ${multClima === 1 ? '(Normal)' : (multClima < 1 ? '(Físico/Bajo)' : '(Extremo)')}`;
+            document.getElementById('slider-arbitro-val').textContent = `${multArbitro.toFixed(1)}x ${multArbitro === 1 ? '(Normal)' : (multArbitro > 1.3 ? '(Riguroso)' : '(Permisivo)')}`;
+
+            const baseStats = activeAnalysisData.market_analysis.estadisticas_simuladas;
+            const local = activeAnalysisData.local_team || "Local";
+            const visitor = activeAnalysisData.visitor_team || "Visitante";
+
+            // Recalculate Goal lambdas
+            let goals_l_base = 1.6;
+            let goals_v_base = 1.2;
+            let l_lambda = goals_l_base * multLocalia * (1.2 - 0.2 * multClima);
+            let v_lambda = goals_v_base * (1.2 - 0.2 * multClima);
+
+            // 1X2 Probabilities
+            const p1x2 = calculatePoisson1X2(l_lambda, v_lambda);
+
+            // Goles Over/Under
+            const totalGoalsLambda = l_lambda + v_lambda;
+            const pOver15 = cumulativePoisson(1, totalGoalsLambda) * 100;
+            const pOver25 = cumulativePoisson(2, totalGoalsLambda) * 100;
+
+            // Corners (Clima increases corners due to physical blocks / slippery grass)
+            const expectedCLoc = 5.0 * multClima;
+            const expectedCVis = 4.5 * multClima;
+            const cornersLambda = expectedCLoc + expectedCVis;
+            const pOver95Corners = cumulativePoisson(9, cornersLambda) * 100;
+
+            // Cards
+            const expectedCards = 4.5 * multArbitro;
+            const pOver45Cards = cumulativePoisson(4, expectedCards) * 100;
+
+            // Assemble recalculated stats
+            const recStats = {
+                probabilidad_local_porcentaje: p1x2.local,
+                probabilidad_empate_porcentaje: p1x2.draw,
+                probabilidad_visitante_porcentaje: p1x2.visitor,
+                probabilidad_over_1_5_porcentaje: pOver15,
+                probabilidad_over_2_5_porcentaje: pOver25,
+                probabilidad_over_9_5_corners_porcentaje: pOver95Corners,
+                probabilidad_over_4_5_tarjetas_porcentaje: pOver45Cards,
+                promedio_tiros_esquina_local: expectedCLoc,
+                promedio_tiros_esquina_visitante: expectedCVis,
+                promedio_tarjetas_amarillas: expectedCards
+            };
+
+            // Recalculate picks recommendations
+            let recPick = "Menos de 2.5 goles o Empate";
+            if (p1x2.local > 58) {
+                recPick = `Gana ${local} (Doble Oportunidad o 1X2)`;
+            } else if (p1x2.visitor > 45) {
+                recPick = `Hándicap Asiático ${visitor} +0.5`;
+            } else if (pOver25 > 65) {
+                recPick = "Más de 2.5 Goles Totales";
+            } else if (pOver45Cards > 65) {
+                recPick = "Más de 4.5 Tarjetas Totales";
+            }
+
+            const recMarket = {
+                cuota_local_estimada: (100 / p1x2.local) * 0.95,
+                cuota_empate_estimada: (100 / p1x2.draw) * 0.95,
+                cuota_visitante_estimada: (100 / p1x2.visitor) * 0.95,
+                recomendacion_apuesta: recPick,
+                handicap_asiatico_linea: p1x2.local > p1x2.visitor ? `${local} -0.5` : `${visitor} +0.5`,
+                handicap_asiatico_cuota: 1.95
+            };
+
+            renderPoissonOutput(recStats, recMarket, local, visitor);
+        }
+
+        // 7. Visual vertical timeline for simulations (NUEVO ROM 1.1)
+        function renderDetailedSimulations(sims, local, visitor) {
+            const container = document.getElementById('simulations-detailed-list');
+            container.innerHTML = "";
+
+            sims.forEach(sim => {
+                const card = document.createElement('div');
+                card.className = "glass-card";
+                card.style.background = "rgba(255, 255, 255, 0.015)";
+                card.style.borderColor = "var(--border-card)";
+                card.style.padding = "1.25rem";
+
+                let timelineEvents = [];
+                
+                if (sim.anotadores) {
+                    sim.anotadores.forEach(a => {
+                        timelineEvents.push({
+                            minuto: a.minuto,
+                            type: "goal",
+                            class: "goal",
+                            icon: "⚽",
+                            desc: `¡GOOOOOL! ${a.jugador} anota para el equipo ${a.equipo === 'local' ? local : visitor}.`
+                        });
+                    });
+                }
+                
+                if (sim.tarjetas_amarillas) {
+                    sim.tarjetas_amarillas.forEach(t => {
+                        timelineEvents.push({
+                            minuto: t.minuto,
+                            type: "booking-yellow",
+                            class: "booking-yellow",
+                            icon: "🟨",
+                            desc: `Tarjeta Amarilla para ${t.jugador} (${t.equipo === 'local' ? local : visitor}) por juego peligroso.`
+                        });
+                    });
+                }
+
+                if (sim.tarjetas_rojas) {
+                    sim.tarjetas_rojas.forEach(t => {
+                        timelineEvents.push({
+                            minuto: t.minuto,
+                            type: "booking-red",
+                            class: "booking-red",
+                            icon: "🟥",
+                            desc: `¡TARJETA ROJA DIRECTA! ${t.jugador} (${t.equipo === 'local' ? local : visitor}) es expulsado. Motivo: ${t.motivo || 'Falta grave'}.`
+                        });
+                    });
+                }
+
+                timelineEvents.push({ minuto: 1, type: "info", class: "info", icon: "🏁", desc: "Pitazo inicial. El árbitro da inicio a las acciones en el estadio." });
+                timelineEvents.sort((a,b) => a.minuto - b.minuto);
+                timelineEvents.push({ minuto: 90, type: "info", class: "info", icon: "🏁", desc: `Final del encuentro. Marcador de Poisson: ${local} ${sim.goles_local} - ${sim.goles_visitante} ${visitor}.` });
+
+                let timelineHtml = timelineEvents.map(ev => `
+                    <div class="timeline-item ${ev.class}">
+                        <div class="timeline-badge">${ev.icon}</div>
+                        <div>
+                            <strong>Minuto ${ev.minuto}:</strong> ${ev.desc}
+                        </div>
+                    </div>
+                `).join("");
+
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.6rem; margin-bottom: 0.85rem;">
+                        <h3 style="font-weight: 800; font-size: 1.05rem; color: var(--accent-cyan);">Simulación ${sim.simulacion_id}: ${sim.escenario}</h3>
+                        <span style="font-size: 1.3rem; font-weight: 900; color: var(--accent-cyan);">${local} ${sim.goles_local} - ${sim.goles_visitante} ${visitor}</span>
+                    </div>
+                    <div style="margin-bottom: 0.85rem; font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.3rem;">
+                        <div><strong>Posesión de Balón:</strong> ${local} ${sim.posesion_local_porcentaje}% - ${100 - sim.posesion_local_porcentaje}% ${visitor} | Corners: ${sim.tiros_esquina_local} - ${sim.tiros_esquina_visitante}</div>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 0.03em;">Línea de Tiempo del Encuentro:</h4>
+                        <div class="timeline-container">
+                            ${timelineHtml}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+    </script>
+    <!-- Register PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((reg) => console.log('Service Worker registrado con éxito:', reg.scope))
+                    .catch((err) => console.error('Error al registrar el Service Worker:', err));
+            });
+        }
+    </script>
+</body>
+</html>

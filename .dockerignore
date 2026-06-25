@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git/
+.github/
+.gitignore
+Dockerfile
+docker-compose.yml
+.agents/
+.gemini/
+ngrok.exe
+*.log
+*.exe

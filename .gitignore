@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+*.pyc
+
+# Android / Gradle
+android-app/.gradle/
+android-app/build/
+android-app/app/build/
+android-app/local.properties
+android-app/.kotlin/
+
+# APK (se genera en CI)
+*.apk
+
+# Instaladores descargados
+git-installer.exe
+ngrok.zip
+ngrok.exe
+jdk17/
+
+# Archivos de entorno
+.env
+*.env
+
+# Datos grandes / cachés
+historical_results.json
+historical_simulations.json
+player_profiles.json
+backtest_summary.json
+
+# IDE
+.idea/
+*.iml
+.vscode/
