@@ -55,13 +55,20 @@ class AgentCoordinator:
                 history_data = []
         
         history_data.append(record)
-        
+
+        # ── MEJORA B: Mantener solo los últimos 50 registros ─────────────────
+        MAX_HISTORY = 50
+        if len(history_data) > MAX_HISTORY:
+            history_data = history_data[-MAX_HISTORY:]
+        # ─────────────────────────────────────────────────────────────────────
+
         try:
             with open(history_path, "w", encoding="utf-8") as f:
                 json.dump(history_data, f, ensure_ascii=False, indent=2)
-            print(f"[AgentCoordinator] Historial del partido guardado con éxito en {history_path}")
+            print(f"[AgentCoordinator] Historial guardado ({len(history_data)}/{MAX_HISTORY} registros) en {history_path}")
         except Exception as e:
             print(f"[AgentCoordinator] Error guardando historial: {e}")
+
 
     def _extract_environment_details(self, raw_data: dict, local_team: str, visitor_team: str) -> dict:
         """

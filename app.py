@@ -8,6 +8,21 @@ app = Flask(__name__, static_folder="static", template_folder="templates")
 os.makedirs(os.path.join(app.root_path, "templates"), exist_ok=True)
 os.makedirs(os.path.join(app.root_path, "static"), exist_ok=True)
 
+# ── MEJORA C: Singleton del coordinator ──────────────────────────────────────
+# Se instancia una sola vez al arrancar el servidor, no en cada request.
+from agent_coordinator import AgentCoordinator
+_coordinator = AgentCoordinator()
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── MEJORA D: Cabeceras CORS globales ────────────────────────────────────────
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
+# ─────────────────────────────────────────────────────────────────────────────
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -26,14 +41,14 @@ def analyze():
     visitor = request.args.get("visitor", "").strip()
 
     if not local or not visitor:
-        return Response("data: " + json.dumps({"status": "error", "message": "Equipos no provistos."}) + "\n\n", mimetype="text/event-stream")
-
-    from agent_coordinator import AgentCoordinator
-    coordinator = AgentCoordinator()
+        return Response(
+            "data: " + json.dumps({"status": "error", "message": "Equipos no provistos."}) + "\n\n",
+            mimetype="text/event-stream"
+        )
 
     def generate():
         try:
-            generator = coordinator.run_full_analysis_generator(local, visitor)
+            generator = _coordinator.run_full_analysis_generator(local, visitor)
             for event in generator:
                 yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
         except Exception as e:
