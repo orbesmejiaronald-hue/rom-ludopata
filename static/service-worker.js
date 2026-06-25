@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rom-ludopata-v1.1';
+const CACHE_NAME = 'rom-ludopata-v1.2';
 const ASSETS = [
   '/',
   '/static/manifest.json',
@@ -29,13 +29,47 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  // Let the browser handle standard API requests directly, cache static resources
-  if (e.request.url.includes('/api/')) {
-    return; // Do not cache API endpoints
+  // Only intercept GET requests
+  if (e.request.method !== 'GET') {
+    return;
   }
-  e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
-      return cachedResponse || fetch(e.request);
-    })
-  );
+
+  const url = new URL(e.request.url);
+
+  // Skip API routes completely (no caching for dynamic predictions or chat streams)
+  if (url.pathname.startsWith('/api/')) {
+    return;
+  }
+
+  // Network First strategy for HTML root '/' to ensure updates show up instantly
+  if (url.pathname === '/' || (e.request.headers.get('accept') && e.request.headers.get('accept').includes('text/html'))) {
+    e.respondWith(
+      fetch(e.request)
+        .then((response) => {
+          // Cache the fresh version of the page
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(e.request, responseClone);
+          });
+          return response;
+        })
+        .catch(() => {
+          // If network is offline, fallback to cache
+          return caches.match(e.request);
+        })
+    );
+  } else {
+    // Cache First strategy for static assets (images, manifest, fonts)
+    e.respondWith(
+      caches.match(e.request).then((cachedResponse) => {
+        return cachedResponse || fetch(e.request).then((response) => {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(e.request, responseClone);
+          });
+          return response;
+        });
+      })
+    );
+  }
 });

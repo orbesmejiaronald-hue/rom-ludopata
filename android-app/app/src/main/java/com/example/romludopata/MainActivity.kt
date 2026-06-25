@@ -11,20 +11,45 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.romludopata.theme.InterFont
 import com.example.romludopata.theme.ROMLUDOPATATheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+private const val SERVER_URL          = "https://rom-ludopata.onrender.com"
+private const val AUTO_RETRY_MS       = 10_000L
+private const val COLD_START_SECONDS  = 50
+
+// ── Paleta de colores ────────────────────────────────────────────────────────
+private val BgDeep     = Color(0xFF08090E)
+private val BgSurface  = Color(0xFF0F111A)
+private val BgElevated = Color(0xFF161926)
+private val AccentGreen = Color(0xFF00C896)
+private val AccentGreenDim = Color(0x2000C896)
+private val TextPrimary   = Color(0xFFF1F5F9)
+private val TextSecondary = Color(0xFF64748B)
+private val TextTertiary  = Color(0xFF334155)
+private val DividerColor  = Color(0xFF1E2535)
+// ─────────────────────────────────────────────────────────────────────────────
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,219 +59,396 @@ class MainActivity : ComponentActivity() {
             ROMLUDOPATATheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFF0F172A) // Slate 900 (Fondo oscuro premium)
+                    color    = BgDeep
                 ) {
-                    var webViewRef by remember { mutableStateOf<WebView?>(null) }
-                    var isLoading by remember { mutableStateOf(true) }
-                    var isError by remember { mutableStateOf(false) }
-                    var loadProgress by remember { mutableStateOf(0) }
-                    
-                    // URL del servidor desplegado en Render (o local si el usuario prefiere)
-                    val serverUrl = "https://431a-2800-bf0-80d3-65-e0b4-9a50-5bc9-ff5e.ngrok-free.app"
-                    
-                    // Manejar el botón físico de retroceso del teléfono
+                    var webViewRef    by remember { mutableStateOf<WebView?>(null) }
+                    var isLoading     by remember { mutableStateOf(true) }
+                    var isError       by remember { mutableStateOf(false) }
+                    var loadProgress  by remember { mutableStateOf(0) }
+                    var isColdStart   by remember { mutableStateOf(true) }
+                    var countdown     by remember { mutableIntStateOf(COLD_START_SECONDS) }
+                    var showDoneToast by remember { mutableStateOf(false) }
+
+                    val scope = rememberCoroutineScope()
+
+                    // Countdown cold-start
+                    LaunchedEffect(isLoading, isError) {
+                        if (isLoading && !isError && isColdStart) {
+                            countdown = COLD_START_SECONDS
+                            while (countdown > 0 && isLoading && !isError) {
+                                delay(1_000L)
+                                countdown--
+                            }
+                            if (!isLoading) isColdStart = false
+                        }
+                    }
+
+                    // Auto-retry si hay error
+                    LaunchedEffect(isError) {
+                        if (isError) {
+                            delay(AUTO_RETRY_MS)
+                            if (isError) {
+                                isError = false; isLoading = true
+                                webViewRef?.reload()
+                            }
+                        }
+                    }
+
                     BackHandler(enabled = webViewRef?.canGoBack() == true) {
                         webViewRef?.goBack()
                     }
-                    
-                    Box(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .safeDrawingPadding()
+                    ) {
+                        // ── WebView ───────────────────────────────────────────
                         AndroidView(
                             modifier = Modifier.fillMaxSize(),
-                            factory = { context ->
-                                WebView(context).apply {
+                            factory  = { ctx ->
+                                WebView(ctx).apply {
                                     layoutParams = ViewGroup.LayoutParams(
                                         ViewGroup.LayoutParams.MATCH_PARENT,
                                         ViewGroup.LayoutParams.MATCH_PARENT
                                     )
                                     webViewClient = object : WebViewClient() {
-                                        override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                                            super.onPageStarted(view, url, favicon)
-                                            isLoading = true
-                                            isError = false
+                                        override fun onPageStarted(v: WebView?, url: String?, fav: Bitmap?) {
+                                            super.onPageStarted(v, url, fav)
+                                            isLoading = true; isError = false
                                         }
-
-                                        override fun onPageFinished(view: WebView?, url: String?) {
-                                            super.onPageFinished(view, url)
-                                            isLoading = false
+                                        override fun onPageFinished(v: WebView?, url: String?) {
+                                            super.onPageFinished(v, url)
+                                            isLoading = false; isColdStart = false
+                                            showDoneToast = true
+                                            scope.launch { delay(2_500L); showDoneToast = false }
                                         }
-
-                                        override fun onReceivedError(
-                                            view: WebView?,
-                                            request: WebResourceRequest?,
-                                            error: WebResourceError?
-                                        ) {
-                                            super.onReceivedError(view, request, error)
-                                            // Solo capturar errores críticos de la carga del documento principal
-                                            if (request?.isForMainFrame == true) {
-                                                isError = true
-                                                isLoading = false
-                                            }
+                                        override fun onReceivedError(v: WebView?, req: WebResourceRequest?, err: WebResourceError?) {
+                                            super.onReceivedError(v, req, err)
+                                            if (req?.isForMainFrame == true) { isError = true; isLoading = false }
                                         }
                                     }
-                                    
                                     webChromeClient = object : android.webkit.WebChromeClient() {
-                                        override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                                            super.onProgressChanged(view, newProgress)
-                                            loadProgress = newProgress
+                                        override fun onProgressChanged(v: WebView?, p: Int) {
+                                            super.onProgressChanged(v, p)
+                                            loadProgress = p
                                         }
                                     }
-                                    
-                                    // Configuración robusta para aplicaciones web modernas
-                                    settings.javaScriptEnabled = true
-                                    settings.domStorageEnabled = true
-                                    settings.databaseEnabled = true
-                                    settings.allowFileAccess = true
-                                    settings.allowContentAccess = true
+                                    settings.javaScriptEnabled   = true
+                                    settings.domStorageEnabled    = true
+                                    @Suppress("DEPRECATION")
+                                    settings.databaseEnabled      = true
+                                    settings.allowFileAccess      = true
+                                    settings.allowContentAccess   = true
                                     settings.loadWithOverviewMode = true
-                                    settings.useWideViewPort = true
-                                    settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
-                                    
+                                    settings.useWideViewPort      = true
+                                    settings.mixedContentMode     =
+                                        android.webkit.WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
                                     webViewRef = this
-                                    loadUrl(serverUrl)
+                                    loadUrl(SERVER_URL)
                                 }
                             },
-                            update = {
-                                // No-op
-                            }
+                            update = {}
                         )
-                        
-                        // PANTALLA DE CARGA PREMIUM (OVERLAY)
-                        if (isLoading && !isError) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Color(0xFF0F172A)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center,
-                                    modifier = Modifier.padding(24.dp)
-                                ) {
-                                    // Spinner Circular de progreso neón
-                                    CircularProgressIndicator(
-                                        progress = { loadProgress / 100f },
-                                        modifier = Modifier.size(72.dp),
-                                        color = Color(0xFF10B981), // Verde Esmeralda Neón
-                                        strokeWidth = 6.dp,
-                                        trackColor = Color(0xFF1E293B) // Slate 800
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(24.dp))
-                                    
-                                    Text(
-                                        text = "ROM LUDOPATA 1.1",
-                                        color = Color.White,
-                                        fontSize = 24.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        letterSpacing = 1.5.sp
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    
-                                    Text(
-                                        text = "Estableciendo conexión segura con la nube... ($loadProgress%)",
-                                        color = Color(0xFF94A3B8),
-                                        fontSize = 14.sp,
-                                        textAlign = TextAlign.Center
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(20.dp))
-                                    
-                                    // Advertencia del arranque en frío de Render
-                                    Card(
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = Color(0xFF1E293B)
-                                        ),
-                                        shape = RoundedCornerShape(12.dp),
-                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
-                                    ) {
-                                        Column(
-                                            modifier = Modifier.padding(16.dp),
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-                                            Text(
-                                                text = "⚡ Nota de carga inicial",
-                                                color = Color(0xFFF59E0B), // Amber 500
-                                                fontWeight = FontWeight.SemiBold,
-                                                fontSize = 12.sp
-                                            )
-                                            Spacer(modifier = Modifier.height(6.dp))
-                                            Text(
-                                                text = "Si es la primera vez que abres la app en el día, el servidor gratuito de Render puede tardar hasta 50 segundos en arrancar tras haber estado inactivo.",
-                                                color = Color(0xFF94A3B8),
-                                                fontSize = 11.sp,
-                                                textAlign = TextAlign.Center,
-                                                lineHeight = 16.sp
-                                            )
-                                        }
-                                    }
-                                }
-                            }
+
+                        // ── Pantalla de carga ─────────────────────────────────
+                        AnimatedVisibility(
+                            visible = isLoading && !isError,
+                            enter   = fadeIn(tween(300)),
+                            exit    = fadeOut(tween(400))
+                        ) {
+                            LoadingScreen(
+                                progress    = loadProgress,
+                                countdown   = countdown,
+                                isColdStart = isColdStart
+                            )
                         }
-                        
-                        // PANTALLA DE ERROR DE CONEXIÓN
-                        if (isError) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Color(0xFF0F172A)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center,
-                                    modifier = Modifier.padding(32.dp)
-                                ) {
-                                    Text(
-                                        text = "⚠️",
-                                        fontSize = 64.sp
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    
-                                    Text(
-                                        text = "Error de Conexión",
-                                        color = Color.White,
-                                        fontSize = 22.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    
-                                    Text(
-                                        text = "No se pudo conectar con el servidor remoto. Comprueba tu conexión a internet o reintenta en unos instantes.",
-                                        color = Color(0xFF94A3B8),
-                                        fontSize = 14.sp,
-                                        textAlign = TextAlign.Center,
-                                        lineHeight = 20.sp
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(24.dp))
-                                    
-                                    Button(
-                                        onClick = {
-                                            isError = false
-                                            isLoading = true
-                                            webViewRef?.reload()
-                                        },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(0xFF10B981) // Verde esmeralda
-                                        ),
-                                        shape = RoundedCornerShape(8.dp)
-                                    ) {
-                                        Text(
-                                            text = "Reintentar Conexión",
-                                            color = Color.White,
-                                            fontWeight = FontWeight.SemiBold
-                                        )
-                                    }
+
+                        // ── Pantalla de error ─────────────────────────────────
+                        AnimatedVisibility(
+                            visible = isError,
+                            enter   = fadeIn(tween(300)),
+                            exit    = fadeOut(tween(300))
+                        ) {
+                            ErrorScreen(
+                                retryTotalMs = AUTO_RETRY_MS,
+                                onRetryNow   = {
+                                    isError = false; isLoading = true
+                                    webViewRef?.reload()
                                 }
-                            }
+                            )
+                        }
+
+                        // ── Toast "Conectado" ─────────────────────────────────
+                        AnimatedVisibility(
+                            visible  = showDoneToast,
+                            enter    = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+                            exit     = slideOutVertically(targetOffsetY  = { it }) + fadeOut(),
+                            modifier = Modifier.align(Alignment.BottomCenter)
+                        ) {
+                            ConnectedToast()
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PANTALLA DE CARGA
+// ─────────────────────────────────────────────────────────────────────────────
+@Composable
+private fun LoadingScreen(progress: Int, countdown: Int, isColdStart: Boolean) {
+    Box(
+        modifier          = Modifier
+            .fillMaxSize()
+            .background(BgDeep),
+        contentAlignment  = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier            = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 40.dp)
+        ) {
+            // Logo mark
+            LogoMark()
+
+            Spacer(Modifier.height(28.dp))
+
+            // Nombre de la app
+            Text(
+                text       = "ROM LUDOPATA",
+                fontFamily = InterFont,
+                fontWeight = FontWeight.SemiBold,
+                fontSize   = 22.sp,
+                color      = TextPrimary,
+                letterSpacing = 2.sp
+            )
+            Text(
+                text       = "1.2",
+                fontFamily = InterFont,
+                fontWeight = FontWeight.Light,
+                fontSize   = 13.sp,
+                color      = AccentGreen,
+                letterSpacing = 1.sp
+            )
+
+            Spacer(Modifier.height(40.dp))
+
+            // Barra de progreso delgada
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .clip(RoundedCornerShape(1.dp))
+                    .background(DividerColor)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(progress / 100f)
+                        .fillMaxHeight()
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(AccentGreen, Color(0xFF00E5B0))
+                            )
+                        )
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            Text(
+                text      = if (progress > 0) "$progress%" else "Iniciando...",
+                fontFamily = InterFont,
+                fontWeight = FontWeight.Normal,
+                fontSize  = 12.sp,
+                color     = TextSecondary
+            )
+
+            // Bloque cold-start
+            if (isColdStart) {
+                Spacer(Modifier.height(40.dp))
+                HorizontalDivider(color = DividerColor, thickness = 1.dp)
+                Spacer(Modifier.height(24.dp))
+
+                Text(
+                    text       = if (countdown > 0) "${countdown}s" else "...",
+                    fontFamily = InterFont,
+                    fontWeight = FontWeight.Bold,
+                    fontSize   = 48.sp,
+                    color      = AccentGreen
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                Text(
+                    text      = "El servidor tarda hasta 50 s en arrancar\ntras un período de inactividad.",
+                    fontFamily = InterFont,
+                    fontWeight = FontWeight.Normal,
+                    fontSize  = 12.sp,
+                    color     = TextSecondary,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 18.sp
+                )
+            }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOGO MARK (geométrico minimalista)
+// ─────────────────────────────────────────────────────────────────────────────
+@Composable
+private fun LogoMark() {
+    Box(
+        modifier         = Modifier
+            .size(56.dp)
+            .background(AccentGreenDim, RoundedCornerShape(16.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text       = "R",
+            fontFamily = InterFont,
+            fontWeight = FontWeight.Bold,
+            fontSize   = 26.sp,
+            color      = AccentGreen
+        )
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PANTALLA DE ERROR
+// ─────────────────────────────────────────────────────────────────────────────
+@Composable
+private fun ErrorScreen(retryTotalMs: Long, onRetryNow: () -> Unit) {
+    var retryCountdown by remember { mutableIntStateOf((retryTotalMs / 1000).toInt()) }
+
+    LaunchedEffect(Unit) {
+        retryCountdown = (retryTotalMs / 1000).toInt()
+        while (retryCountdown > 0) { delay(1_000L); retryCountdown-- }
+    }
+
+    val retryProgress = 1f - retryCountdown / (retryTotalMs / 1000f)
+
+    Box(
+        modifier         = Modifier
+            .fillMaxSize()
+            .background(BgDeep),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier            = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 40.dp)
+        ) {
+            // Ícono de error minimalista
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(Color(0x20EF4444), RoundedCornerShape(16.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "!", fontSize = 26.sp, color = Color(0xFFEF4444), fontWeight = FontWeight.Bold)
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            Text(
+                text       = "Sin conexión",
+                fontFamily = InterFont,
+                fontWeight = FontWeight.SemiBold,
+                fontSize   = 20.sp,
+                color      = TextPrimary
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+                text      = "No se pudo alcanzar el servidor.\nReintentando en ${retryCountdown}s.",
+                fontFamily = InterFont,
+                fontWeight = FontWeight.Normal,
+                fontSize  = 13.sp,
+                color     = TextSecondary,
+                textAlign = TextAlign.Center,
+                lineHeight = 20.sp
+            )
+
+            Spacer(Modifier.height(32.dp))
+
+            // Barra de progreso del reintento
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .clip(RoundedCornerShape(1.dp))
+                    .background(DividerColor)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(retryProgress)
+                        .fillMaxHeight()
+                        .background(AccentGreen)
+                )
+            }
+
+            Spacer(Modifier.height(32.dp))
+
+            // Botón de reintento
+            OutlinedButton(
+                onClick = onRetryNow,
+                border  = ButtonDefaults.outlinedButtonBorder.copy(
+                    brush = Brush.horizontalGradient(listOf(AccentGreen, AccentGreen))
+                ),
+                shape   = RoundedCornerShape(10.dp),
+                colors  = ButtonDefaults.outlinedButtonColors(
+                    contentColor = AccentGreen
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text       = "Reintentar ahora",
+                    fontFamily = InterFont,
+                    fontWeight = FontWeight.Medium,
+                    fontSize   = 14.sp,
+                    modifier   = Modifier.padding(vertical = 4.dp)
+                )
+            }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TOAST "CONECTADO"
+// ─────────────────────────────────────────────────────────────────────────────
+@Composable
+private fun ConnectedToast() {
+    Surface(
+        shape     = RoundedCornerShape(100.dp),
+        color     = BgElevated,
+        tonalElevation = 8.dp,
+        modifier  = Modifier
+            .padding(bottom = 36.dp)
+    ) {
+        Row(
+            verticalAlignment    = Alignment.CenterVertically,
+            modifier             = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(7.dp)
+                    .background(AccentGreen, CircleShape)
+            )
+            Text(
+                text       = "Servidor conectado",
+                fontFamily = InterFont,
+                fontWeight = FontWeight.Medium,
+                fontSize   = 13.sp,
+                color      = TextPrimary
+            )
         }
     }
 }

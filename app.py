@@ -61,6 +61,87 @@ def analyze():
     response.headers["X-Accel-Buffering"] = "no"
     return response
 
+@app.route("/api/chat")
+def chat():
+    # Soporta GET con params para EventSource
+    message = request.args.get("message", "").strip()
+    
+    if not message:
+        # Intentar POST fallback por si acaso
+        if request.method == "POST":
+            try:
+                data = request.get_json() or {}
+                message = data.get("message", "").strip()
+            except:
+                pass
+                
+    if not message:
+        return Response(
+            "data: " + json.dumps({"status": "error", "message": "Mensaje vacío."}) + "\n\n",
+            mimetype="text/event-stream"
+        )
+
+    def generate_chat():
+        try:
+            # 1. Decidir si requiere búsqueda en internet
+            search_prompt = f"""
+            Analiza el mensaje del usuario para un chat de apuestas y pronósticos deportivos:
+            "{message}"
+            
+            Determina si responder a este mensaje requiere buscar información actualizada en tiempo real en internet (como alineaciones, resultados recientes, cuotas, árbitros, etc.).
+            - Si requiere búsqueda, responde ÚNICAMENTE con los términos de búsqueda óptimos en inglés o español (máximo 5-6 palabras).
+            - Si no requiere búsqueda (ej. saludos, preguntas generales sobre apuestas, explicaciones de conceptos o sobre el funcionamiento de la app), responde con la palabra 'NO_SEARCH'.
+            
+            Respuesta:
+            """
+            
+            search_query = _coordinator.gemini_client.generate_content(search_prompt).strip()
+            
+            context = ""
+            search_results = []
+            if "NO_SEARCH" not in search_query and len(search_query) > 2:
+                yield f"data: {json.dumps({'status': 'searching', 'message': f'Buscando en internet: {search_query}...'}, ensure_ascii=False)}\n\n"
+                search_results = _coordinator.collector.search_duckduckgo(search_query, max_results=5)
+                if search_results:
+                    context = "Información obtenida de internet en tiempo real:\n"
+                    for res in search_results:
+                        context += f"- Enlace: {res['url']}\n  Contenido: {res['snippet']}\n"
+                    yield f"data: {json.dumps({'status': 'context_found', 'message': 'Analizando información recopilada...'}, ensure_ascii=False)}\n\n"
+                else:
+                    yield f"data: {json.dumps({'status': 'no_results', 'message': 'No se encontraron resultados en internet, respondiendo con conocimiento interno...'}, ensure_ascii=False)}\n\n"
+            
+            system_instruction = """
+            Eres el asistente inteligente de ROM LUDOPATA 1.2, un Agente de Apuestas Deportivas Avanzado (AADA).
+            Tu objetivo es responder de manera profesional, analítica, cortés y precisa en español a las dudas del usuario.
+            Si te proveen contexto de internet en tiempo real, úsalo para fundamentar tus respuestas y pronósticos.
+            Sé crítico y realista, no inventes datos. Si no estás seguro de algo, admítelo.
+            Mantén un tono de analista financiero de apuestas premium (estilo minimalista y pulido, sin adornos excesivos).
+            """
+            
+            prompt = f"""
+            Mensaje del usuario: {message}
+            
+            {context}
+            
+            Responde al usuario en español usando formato Markdown limpio.
+            """
+            
+            yield f"data: {json.dumps({'status': 'generating'}, ensure_ascii=False)}\n\n"
+            
+            stream_gen = _coordinator.gemini_client.generate_content_stream(prompt, system_instruction=system_instruction)
+            for chunk in stream_gen:
+                yield f"data: {json.dumps({'status': 'chunk', 'text': chunk}, ensure_ascii=False)}\n\n"
+            
+            yield f"data: {json.dumps({'status': 'done'}, ensure_ascii=False)}\n\n"
+            
+        except Exception as e:
+            yield f"data: {json.dumps({'status': 'error', 'message': f'Error en el chat: {str(e)}'}, ensure_ascii=False)}\n\n"
+
+    response = Response(generate_chat(), mimetype="text/event-stream")
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["X-Accel-Buffering"] = "no"
+    return response
+
 @app.route("/api/backtest")
 def backtest():
     try:

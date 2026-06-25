@@ -95,6 +95,87 @@ class GeminiClient:
                     return self._get_mock_response(prompt)
                 time.sleep(wait_time)
 
+    def generate_content_stream(self, prompt: str, system_instruction: str = None):
+        """
+        Generador para transmitir la respuesta de Gemini en tiempo real (streaming).
+        """
+        if self.client_type == "mock":
+            response_text = self._get_mock_response(prompt)
+            if response_text == "{}":
+                response_text = "Modo SIMULADO activo: No se detectó la variable de entorno `GEMINI_API_KEY`. Para consultas en tiempo real y análisis reales, configura tu clave API de Gemini. Como tu asistente deportivo ROM LUDOPATA 1.2 estoy listo para ayudarte."
+            
+            import time
+            words = response_text.split(" ")
+            for i, word in enumerate(words):
+                yield word + (" " if i < len(words) - 1 else "")
+                time.sleep(0.02)
+            return
+
+        model_name = "gemini-2.5-flash"
+        max_retries = 3
+        
+        for attempt in range(max_retries):
+            try:
+                if self.client_type == "genai":
+                    from google.genai import types
+                    config = types.GenerateContentConfig()
+                    if system_instruction:
+                        config.system_instruction = system_instruction
+                    
+                    try:
+                        response = self.client.models.generate_content_stream(
+                            model=model_name,
+                            contents=prompt,
+                            config=config
+                        )
+                        for chunk in response:
+                            yield chunk.text
+                        return
+                    except Exception as inner_e:
+                        print(f"[GeminiClient] Error stream con {model_name} (intento {attempt+1}): {inner_e}. Intentando fallback a gemini-1.5-flash...")
+                        response = self.client.models.generate_content_stream(
+                            model="gemini-1.5-flash",
+                            contents=prompt,
+                            config=config
+                        )
+                        for chunk in response:
+                            yield chunk.text
+                        return
+
+                elif self.client_type == "generativeai":
+                    if system_instruction:
+                        model = self.client.GenerativeModel(
+                            model_name=model_name,
+                            system_instruction=system_instruction
+                        )
+                    else:
+                        model = self.client.GenerativeModel(model_name=model_name)
+
+                    try:
+                        response = model.generate_content(prompt, stream=True)
+                        for chunk in response:
+                            yield chunk.text
+                        return
+                    except Exception as inner_e:
+                        print(f"[GeminiClient] Error stream con {model_name} (intento {attempt+1}): {inner_e}. Intentando fallback a gemini-1.5-flash...")
+                        model = self.client.GenerativeModel(model_name="gemini-1.5-flash", system_instruction=system_instruction)
+                        response = model.generate_content(prompt, stream=True)
+                        for chunk in response:
+                            yield chunk.text
+                        return
+            except Exception as e:
+                import time
+                import random
+                wait_time = (2 ** attempt) + random.random()
+                print(f"[GeminiClient] Error general llamando a Gemini Stream (intento {attempt+1}/{max_retries}): {e}. Esperando {wait_time:.2f}s antes de reintentar...")
+                if attempt == max_retries - 1:
+                    print(f"[GeminiClient] Se agotaron los reintentos para la llamada a Gemini Stream. Usando mock.")
+                    words = "Error al conectar con la API de Gemini. Por favor, verifica tu conexión o tu API Key.".split(" ")
+                    for word in words:
+                        yield word + " "
+                    return
+                time.sleep(wait_time)
+
     def _get_mock_response(self, prompt: str) -> str:
         """
         Genera respuestas simuladas JSON válidas para que la UI funcione sin API key.

@@ -11,8 +11,8 @@ android {
         applicationId = "com.example.romludopata"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.2"
     }
 
     buildTypes {
@@ -81,4 +81,8 @@ dependencies {
   implementation(libs.androidx.navigation3.ui)
   implementation(libs.androidx.navigation3.runtime)
   implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+
+  // Google Fonts (Inter)
+  implementation(libs.androidx.compose.ui.text.google.fonts)
 }
+
