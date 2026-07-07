@@ -1926,8 +1926,8 @@
             const visitor = activeAnalysisData.visitor_team || "Visitante";
 
             // Recalculate Goal lambdas
-            let goals_l_base = 1.6;
-            let goals_v_base = 1.2;
+            let goals_l_base = baseStats.promedio_goles_local || 1.5;
+            let goals_v_base = baseStats.promedio_goles_visitor || 1.1;
             let l_lambda = goals_l_base * multLocalia * (1.2 - 0.2 * multClima);
             let v_lambda = goals_v_base * (1.2 - 0.2 * multClima);
 
@@ -2070,8 +2070,35 @@
         }
 
         // ==========================================================================
-        // ROM LUDOPATA 1.2 CUSTOM SPORTS SEARCH CHAT LOGIC
+        // ROM LUDOPATA 1.2 CUSTOM SPORTS SEARCH CHAT LOGIC (WITH PERSISTENT HISTORY)
         // ==========================================================================
+        let chatHistory = [];
+        try {
+            chatHistory = JSON.parse(localStorage.getItem('rom_chat_history')) || [];
+        } catch(e) {
+            console.error('Error al cargar historial desde localStorage', e);
+        }
+
+        // Cargar historial de chat cuando se cargue el DOM
+        window.addEventListener('DOMContentLoaded', () => {
+            if (chatHistory.length > 0) {
+                const chatMessages = document.getElementById('chat-messages');
+                chatMessages.innerHTML = ''; // Limpiar el saludo por defecto
+                chatHistory.forEach(msg => {
+                    appendChatMessage(msg.sender, msg.text, null, false);
+                });
+            }
+        });
+
+        function saveMessageToHistory(sender, text) {
+            chatHistory.push({ sender, text });
+            try {
+                localStorage.setItem('rom_chat_history', JSON.stringify(chatHistory));
+            } catch(e) {
+                console.error('Error al guardar mensaje en localStorage', e);
+            }
+        }
+
         function sendChatMessage(event) {
             event.preventDefault();
             const inputEl = document.getElementById('chat-input');
@@ -2080,8 +2107,9 @@
             
             inputEl.value = '';
             
-            // 1. Add user message bubble
+            // 1. Add user message bubble y guardar en historial
             appendChatMessage('user', message);
+            saveMessageToHistory('user', message);
             
             // 2. Prepare assistant response container with unique ID
             const assistantMsgId = 'assistant-msg-' + Date.now();
@@ -2121,6 +2149,8 @@
                     } else if (data.status === 'done') {
                         source.close();
                         statusBox.classList.add('hidden');
+                        // Guardar respuesta final en historial
+                        saveMessageToHistory('assistant', fullText);
                     } else if (data.status === 'error') {
                         source.close();
                         statusBox.classList.add('hidden');
@@ -2141,7 +2171,7 @@
             };
         }
         
-        function appendChatMessage(sender, text, id = null) {
+        function appendChatMessage(sender, text, id = null, saveToLocal = true) {
             const chatMessages = document.getElementById('chat-messages');
             const bubble = document.createElement('div');
             bubble.className = 'chat-message ' + sender;
@@ -2180,6 +2210,12 @@
                     <div style="font-size: 0.95rem; line-height: 1.6;">¡Hola! Soy tu asistente de apuestas deportivas avanzadas. Puedo buscar información en internet en tiempo real. Pregúntame sobre lesionados de hoy, cuotas de valor, análisis de árbitros o pronósticos específicos de cualquier encuentro. ¿En qué te puedo ayudar hoy?</div>
                 </div>
             `;
+            chatHistory = [];
+            try {
+                localStorage.removeItem('rom_chat_history');
+            } catch(e) {
+                console.error('Error al limpiar localStorage', e);
+            }
         }
     </script>
     <!-- Register PWA Service Worker -->

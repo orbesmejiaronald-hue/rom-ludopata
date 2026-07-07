@@ -33,6 +33,8 @@ class MarketAnalyzer:
             prob_over_4_5_cards = monte_carlo.get("probabilidad_over_4_5_cards", 50.0)
             prob_over_5_5_cards = monte_carlo.get("probabilidad_over_5_5_cards", 40.0)
             
+            avg_goals_local = monte_carlo.get("promedio_goles_local", 1.5)
+            avg_goals_visitor = monte_carlo.get("promedio_goles_visitante", 1.1)
             avg_corners_local = monte_carlo["promedio_corners_local"]
             avg_corners_visitor = monte_carlo["promedio_corners_visitante"]
             avg_yellow_cards = monte_carlo["promedio_tarjetas"]
@@ -42,6 +44,8 @@ class MarketAnalyzer:
             away_wins = 0
             draws = 0
             total_goals = 0
+            total_goals_local = 0
+            total_goals_visitor = 0
             over_1_5 = 0
             over_2_5 = 0
             total_corners_local = 0
@@ -69,6 +73,8 @@ class MarketAnalyzer:
                     draws += 1
 
                 total_goals += (g_local + g_visitor)
+                total_goals_local += g_local
+                total_goals_visitor += g_visitor
                 if (g_local + g_visitor) > 1.5:
                     over_1_5 += 1
                 if (g_local + g_visitor) > 2.5:
@@ -110,6 +116,8 @@ class MarketAnalyzer:
             prob_over_4_5_cards = (over_4_5_card / num_sims) * 100
             prob_over_5_5_cards = (over_5_5_card / num_sims) * 100
 
+            avg_goals_local = total_goals_local / num_sims
+            avg_goals_visitor = total_goals_visitor / num_sims
             avg_corners_local = total_corners_local / num_sims
             avg_corners_visitor = total_corners_visitor / num_sims
             avg_yellow_cards = total_yellow_cards / num_sims
@@ -260,6 +268,8 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin
                 "probabilidad_over_3_5_tarjetas_porcentaje": prob_over_3_5_cards,
                 "probabilidad_over_4_5_tarjetas_porcentaje": prob_over_4_5_cards,
                 "probabilidad_over_5_5_tarjetas_porcentaje": prob_over_5_5_cards,
+                "promedio_goles_local": avg_goals_local,
+                "promedio_goles_visitante": avg_goals_visitor,
                 "promedio_tiros_esquina_local": avg_corners_local,
                 "promedio_tiros_esquina_visitante": avg_corners_visitor,
                 "promedio_tarjetas_amarillas": avg_yellow_cards,
