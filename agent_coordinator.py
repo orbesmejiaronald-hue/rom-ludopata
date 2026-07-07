@@ -85,10 +85,10 @@ class AgentCoordinator:
         is_neutral = self._is_neutral_venue(local_team, visitor_team, raw_data)
         
         fallback_env = {
-            "estadio_nombre": "Estadio Azteca (CDMX)" if is_neutral else "Desconocido",
-            "estadio_capacidad": "87,523" if is_neutral else "N/A",
-            "estadio_cesped": "Híbrido" if is_neutral else "Natural",
-            "estadio_localia_impacto": "Cancha neutral en México (Mundial / Selección). Se desactiva la ventaja de localía." if is_neutral else "No hay información disponible sobre el impacto de la localía.",
+            "estadio_nombre": "Desconocido (Cancha Neutral)" if is_neutral else "Desconocido",
+            "estadio_capacidad": "N/A",
+            "estadio_cesped": "Desconocido",
+            "estadio_localia_impacto": "Cancha neutral. Se desactiva la ventaja de localía." if is_neutral else "No hay información disponible sobre el impacto de la localía.",
             "clima_pronostico": "Despejado / Clima estándar",
             "arbitro_nombre": "Desconocido",
             "arbitro_promedio_tarjetas": "N/A",
@@ -102,7 +102,7 @@ class AgentCoordinator:
             
         neutral_note = ""
         if is_neutral:
-            neutral_note = f"\nNOTA DE CANCHA NEUTRAL: Este es un partido de Selección / Mundial en Cancha Neutral. Asegúrate de que 'estadio_localia_impacto' indique claramente en español que se juega en cancha neutral (ej. en estadios de México como Estadio Azteca, Estadio Akron o Estadio BBVA) sin ventaja de localía para {local_team}.\n"
+            neutral_note = f"\nNOTA DE CANCHA NEUTRAL: Este es un partido en Cancha Neutral (Mundial, Copa América, Eurocopa, etc.). Asegúrate de que 'estadio_localia_impacto' indique claramente en español que se juega en cancha neutral sin ventaja de localía para {local_team}.\n"
 
         prompt = f"""
 Analiza la siguiente información recopilada de internet para extraer detalles sobre el estadio, el clima y el árbitro del partido:
@@ -114,11 +114,13 @@ Información del Estadio y Clima:
 {stadium_text}
 {scraped_content}
 
+PROHIBICIÓN ABSOLUTA DE ALUCINACIÓN: Si en la información de internet provista no se especifica el nombre del estadio, el clima o el árbitro para el encuentro de hoy, debes reportar 'Desconocido' o 'N/A'. Está estrictamente prohibido predecir, estimar o asumir estadios ficticios o famosos (como el Estadio Azteca o Wembley) si no constan explícitamente en el texto de internet. Tu respuesta debe basarse exclusivamente en datos en tiempo real de internet.
+
 Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato JSON estructurado como este, sin bloques markdown ```json (solo texto JSON puro):
 {{
   "estadio_nombre": "Nombre del estadio",
   "estadio_capacidad": "Capacidad (ej. 50,000 espectadores o N/A)",
-  "estadio_cesped": "Tipo de césped (ej. Natural, Sintético, Híbrido)",
+  "estadio_cesped": "Tipo de césped (ej. Natural, Sintético, Híbrido o N/A)",
   "estadio_localia_impacto": "Análisis muy breve de cómo influye la localía en este estadio en español",
   "clima_pronostico": "Estado del clima esperado en español (ej. Lluvia ligera, 15°C, viento)",
   "arbitro_nombre": "Nombre completo del árbitro",

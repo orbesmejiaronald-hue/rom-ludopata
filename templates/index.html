@@ -145,6 +145,11 @@
             margin-bottom: 1.5rem;
             gap: 0.5rem;
             overflow-x: auto;
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        .tabs-header::-webkit-scrollbar {
+            display: none; /* Hide scrollbar for Chrome, Safari and Opera */
         }
 
         .tab-btn {
@@ -198,6 +203,24 @@
         @media (max-width: 768px) {
             .form-grid {
                 grid-template-columns: 1fr;
+            }
+            .glass-card {
+                padding: 1.25rem 1rem;
+            }
+            .match-header-widget {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .vs-circle {
+                margin: 0.5rem auto;
+            }
+            .team-display h3 {
+                font-size: 1.25rem;
+            }
+            header {
+                flex-direction: column;
+                gap: 0.75rem;
+                text-align: center;
             }
         }
 
@@ -952,7 +975,6 @@
         <!-- Navegación Superior Global (Tabs Principales) -->
         <div class="tabs-header" style="margin-bottom: 2rem;">
             <button class="tab-btn active" id="nav-btn-analyzer" onclick="switchMainTab('tab-analyzer-view')">ANALIZADOR DE PARTIDOS</button>
-            <button class="tab-btn" id="nav-btn-backtest" onclick="switchMainTab('tab-backtest-view')">DASHBOARD DE BACKTESTING</button>
             <button class="tab-btn" id="nav-btn-chat" onclick="switchMainTab('tab-chat-view')">CHAT DE BÚSQUEDA</button>
         </div>
 
@@ -974,7 +996,7 @@
                         <span id="btn-spinner" class="spinner hidden"></span>
                     </button>
                     <!-- Checkbox Cancha Neutral -->
-                    <div style="grid-column: span 3; display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-start;">
+                    <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-start;">
                         <input type="checkbox" id="neutral-checkbox" style="width: auto; cursor: pointer; accent-color: var(--accent-cyan); height: 18px; width: 18px;">
                         <label for="neutral-checkbox" style="cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin: 0; user-select: none;">
                             ⚽ Cancha Neutral / Sin ventaja de localía (Ej. Copa del Mundo, Eurocopa, Amistoso Internacional)
@@ -1291,81 +1313,7 @@
                 <!-- CONTENIDO PESTAÑA 3: 10 SIMULACIONES DETALLADAS (Visual Timeline en ROM 1.1) -->
                 <div id="tab-simulations" class="tab-content">
                     <div id="simulations-detailed-list" style="display: flex; flex-direction: column; gap: 1.5rem;"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SECCIÓN 2: DASHBOARD DE BACKTESTING (NUEVO ROM 1.1) -->
-        <div id="tab-backtest-view" class="tab-content">
-            <div class="glass-card" style="border-color: var(--accent-blue);">
-                <h2 style="margin-bottom: 0.5rem; font-weight: 800; font-size: 1.4rem;">
-                    Dashboard de Rendimiento de Backtesting (Historial del Modelo)
-                </h2>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-                    Muestra las estadísticas de rentabilidad histórica y auditoría del modelo cuantitativo Dixon-Coles calibrado sobre datos reales de LaLiga y Premier League.
-                </p>
-                
-                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
-                    <button class="btn-analyze" id="btn-backtest-laliga" onclick="showBacktestLeague('laliga')" style="background: var(--accent-blue);">LaLiga EA Sports</button>
-                    <button class="btn-analyze" id="btn-backtest-premier" onclick="showBacktestLeague('premier')" style="background: rgba(255,255,255,0.05); box-shadow: none;">Premier League</button>
-                </div>
-
-                <!-- Backtesting Grid Metrics -->
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;" id="backtest-metrics-grid">
-                    <div class="odds-cell" style="text-align: center;">
-                        <div class="odds-cell-label">Retorno de Inversión (ROI)</div>
-                        <div class="odds-cell-prob" id="backtest-roi" style="color: var(--accent-cyan); font-size: 1.6rem;">0.0%</div>
-                    </div>
-                    <div class="odds-cell" style="text-align: center;">
-                        <div class="odds-cell-label">Efectividad (Hit Rate)</div>
-                        <div class="odds-cell-prob" id="backtest-hitrate" style="color: #60a5fa; font-size: 1.6rem;">0.0%</div>
-                    </div>
-                    <div class="odds-cell" style="text-align: center;">
-                        <div class="odds-cell-label">Ganancia Neta</div>
-                        <div class="odds-cell-prob" id="backtest-profit" style="color: var(--accent-yellow); font-size: 1.6rem;">$0.00</div>
-                    </div>
-                    <div class="odds-cell" style="text-align: center;">
-                        <div class="odds-cell-label">Drawdown Máximo</div>
-                        <div class="odds-cell-prob" id="backtest-drawdown" style="color: var(--red-loss); font-size: 1.6rem;">0.0%</div>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;" id="backtest-details-block">
-                    <!-- Apuestas Recientes -->
-                    <div class="env-card">
-                        <div class="env-card-title">Historial de Apuestas Recientes</div>
-                        <div style="overflow-x: auto; max-height: 350px;">
-                            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;" id="backtest-table">
-                                <thead>
-                                    <tr style="border-bottom: 1px solid var(--border-card); color: var(--text-muted); font-weight: bold;">
-                                        <th style="padding: 0.6rem 0.5rem;">Fecha</th>
-                                        <th style="padding: 0.6rem 0.5rem;">Partido</th>
-                                        <th style="padding: 0.6rem 0.5rem;">Apuesta</th>
-                                        <th style="padding: 0.6rem 0.5rem;">Cuota</th>
-                                        <th style="padding: 0.6rem 0.5rem;">Resultado</th>
-                                        <th style="padding: 0.6rem 0.5rem;">Ganancia</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="backtest-table-body">
-                                    <!-- Injected dynamically -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Resumen Operativo -->
-                    <div class="env-card" style="display: flex; flex-direction: column; justify-content: space-between;">
-                        <div>
-                            <div class="env-card-title">Resumen Operativo</div>
-                            <div class="env-item">Apuestas Totales: <strong id="backtest-total-bets">0</strong></div>
-                            <div class="env-item">Apuestas Ganadas: <strong id="backtest-won-bets">0</strong></div>
-                            <div class="env-item">Total Invertido: <strong id="backtest-total-invested">$0.00</strong></div>
-                            <div class="env-item">Banca Final: <strong id="backtest-final-bankroll" style="color: var(--accent-cyan);">$0.00</strong></div>
-                        </div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--border-card); padding-top: 0.75rem;">
-                            * Rendimiento histórico del modelo calibrado con Dixon-Coles y Monte Carlo. Stake calculado dinámicamente con el criterio de Kelly.
-                        </div>
-                    </div>
+          <!-- SECCIÓN 2: DASHBOARD DE BACKTESTING REMOVIDO --> </div>
                 </div>
             </div>
         </div>
@@ -1432,9 +1380,6 @@
             });
             if (tabId === 'tab-analyzer-view') {
                 document.getElementById('nav-btn-analyzer').classList.add('active');
-            } else if (tabId === 'tab-backtest-view') {
-                document.getElementById('nav-btn-backtest').classList.add('active');
-                loadBacktestingData();
             } else if (tabId === 'tab-chat-view') {
                 document.getElementById('nav-btn-chat').classList.add('active');
             }
@@ -1449,82 +1394,6 @@
             btn.classList.add('active');
             document.querySelectorAll('#results-panel > .tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-        }
-
-        // 2. Fetch and render backtesting results
-        function loadBacktestingData() {
-            if (backtestData) return; // cache loaded
-            
-            fetch('/api/backtest')
-                .then(res => {
-                    if (!res.ok) throw new Error("No se pudo cargar el backtesting.");
-                    return res.json();
-                })
-                .then(data => {
-                    backtestData = data;
-                    showBacktestLeague('laliga'); // Show LaLiga by default
-                })
-                .catch(err => {
-                    console.error(err);
-                    document.getElementById('backtest-details-block').innerHTML = `<div class="warning-banner" style="grid-column: span 2;">⚠️ Error al cargar el backtesting histórico de apuestas. Por favor asegúrate de que backtest_summary.json existe.</div>`;
-                });
-        }
-
-        function showBacktestLeague(leagueKey) {
-            if (!backtestData || !backtestData[leagueKey]) return;
-
-            const league = backtestData[leagueKey];
-            
-            // Toggle active buttons style
-            const btnLaLiga = document.getElementById('btn-backtest-laliga');
-            const btnPremier = document.getElementById('btn-backtest-premier');
-            if (leagueKey === 'laliga') {
-                btnLaLiga.style.background = 'var(--accent-blue)';
-                btnLaLiga.style.boxShadow = '';
-                btnPremier.style.background = 'rgba(255,255,255,0.05)';
-                btnPremier.style.boxShadow = 'none';
-            } else {
-                btnPremier.style.background = 'var(--accent-blue)';
-                btnPremier.style.boxShadow = '';
-                btnLaLiga.style.background = 'rgba(255,255,255,0.05)';
-                btnLaLiga.style.boxShadow = 'none';
-            }
-
-            // Fill Metrics
-            document.getElementById('backtest-roi').textContent = `${league.roi_porcentaje.toFixed(1)}%`;
-            document.getElementById('backtest-hitrate').textContent = `${league.efectividad_porcentaje.toFixed(1)}%`;
-            document.getElementById('backtest-profit').textContent = `$${league.ganancia_neta.toFixed(2)}`;
-            document.getElementById('backtest-drawdown').textContent = `${league.drawdown_maximo_porcentaje.toFixed(1)}%`;
-            
-            document.getElementById('backtest-total-bets').textContent = league.apuestas_totales;
-            document.getElementById('backtest-won-bets').textContent = league.apuestas_ganadas;
-            document.getElementById('backtest-total-invested').textContent = `$${league.total_apostado.toFixed(2)}`;
-            document.getElementById('backtest-final-bankroll').textContent = `$${league.banca_final.toFixed(2)}`;
-
-            // Build Table
-            const tbody = document.getElementById('backtest-table-body');
-            tbody.innerHTML = "";
-            
-            league.historial_reciente.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.style.borderBottom = '1px solid rgba(255,255,255,0.03)';
-                
-                const resultText = item.result === 'H' ? 'Local' : (item.result === 'A' ? 'Visita' : 'Empate');
-                const betText = item.bet === 'H' ? 'Local (1)' : (item.bet === 'A' ? 'Visita (2)' : 'Empate (X)');
-                const isWon = item.result === item.bet;
-                
-                tr.innerHTML = `
-                    <td style="padding: 0.6rem 0.5rem; color: var(--text-muted);">${item.date}</td>
-                    <td style="padding: 0.6rem 0.5rem; font-weight: 600;">${item.match}</td>
-                    <td style="padding: 0.6rem 0.5rem;">${betText}</td>
-                    <td style="padding: 0.6rem 0.5rem; font-weight: bold; color: var(--accent-cyan);">${item.odds.toFixed(2)}</td>
-                    <td style="padding: 0.6rem 0.5rem;"><span style="color: ${isWon ? 'var(--accent-cyan)' : 'var(--text-muted)'}">${resultText}</span></td>
-                    <td style="padding: 0.6rem 0.5rem; font-weight: bold; color: ${item.profit_usd > 0 ? 'var(--accent-cyan)' : 'var(--red-loss)'}">
-                        ${item.profit_usd > 0 ? '+' : ''}$${item.profit_usd.toFixed(2)}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
         }
 
         // 3. Analyze form and SSE listener

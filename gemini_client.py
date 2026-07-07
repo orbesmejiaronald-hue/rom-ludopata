@@ -507,9 +507,9 @@ class GeminiClient:
             
             if is_neutral:
                 stadiums = [
-                    {"name": "Estadio Azteca (CDMX)", "cap": "87,523", "grass": "Híbrido", "impact": "Cancha neutral en México para el Mundial 2026. Presión de altitud moderada, sin ventaja de localía clásica."},
-                    {"name": "Estadio Akron (Guadalajara)", "cap": "48,071", "grass": "Natural", "impact": "Cancha neutral en México para el Mundial 2026. Clima cálido y seco, sin ventaja de localía."},
-                    {"name": "Estadio BBVA (Monterrey)", "cap": "53,500", "grass": "Natural", "impact": "Cancha neutral en México para el Mundial 2026. Clima húmedo y sofocante, sin ventaja de localía."}
+                    {"name": "Estadio Olímpico de Berlín", "cap": "74,475", "grass": "Natural", "impact": "Cancha neutral (Eurocopa / Torneo Europeo). Sin ventaja de localía clásica."},
+                    {"name": "Estadio de Lusail", "cap": "88,966", "grass": "Natural", "impact": "Cancha neutral en Qatar (Copa del Mundo). Césped refrigerado, sin ventaja de localía."},
+                    {"name": "MetLife Stadium", "cap": "82,500", "grass": "Híbrido", "impact": "Cancha neutral en EE.UU. (Copa América / Mundial). Sin ventaja de localía clásica."}
                 ]
                 stadium = stadiums[hash_val % len(stadiums)]
             else:
