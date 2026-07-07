@@ -5,9 +5,11 @@ import json
 class GeminiClient:
     def __init__(self):
         # Intentar cargar desde un archivo .env de forma manual para evitar dependencias
-        if os.path.exists(".env"):
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        env_path = os.path.join(base_dir, ".env")
+        if os.path.exists(env_path):
             try:
-                with open(".env", "r", encoding="utf-8") as f:
+                with open(env_path, "r", encoding="utf-8") as f:
                     for line in f:
                         line = line.strip()
                         if line and not line.startswith("#") and "=" in line:
@@ -18,7 +20,7 @@ class GeminiClient:
                                 val = val[1:-1]
                             os.environ[key] = val
             except Exception as e:
-                print(f"[GeminiClient] Advertencia al leer archivo .env: {e}")
+                print(f"[GeminiClient] Advertencia al leer archivo .env en {env_path}: {e}")
 
         self.api_key = os.environ.get("GEMINI_API_KEY")
         self.client = None
