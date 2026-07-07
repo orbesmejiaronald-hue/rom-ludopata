@@ -39,6 +39,7 @@ def manifest():
 def analyze():
     local = request.args.get("local", "").strip()
     visitor = request.args.get("visitor", "").strip()
+    neutral = request.args.get("neutral", "false").strip().lower() == "true"
 
     if not local or not visitor:
         return Response(
@@ -48,7 +49,7 @@ def analyze():
 
     def generate():
         try:
-            generator = _coordinator.run_full_analysis_generator(local, visitor)
+            generator = _coordinator.run_full_analysis_generator(local, visitor, neutral_venue_override=neutral)
             for event in generator:
                 yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
         except Exception as e:

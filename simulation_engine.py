@@ -46,6 +46,7 @@ Tu tarea es estimar y extraer las siguientes variables cuantitativas de rendimie
 3. "local_expected_corners": Promedio de corners a favor del local (rango: 2.0 a 10.0).
 4. "visitor_expected_corners": Promedio de corners a favor del visitante (rango: 2.0 a 10.0).
 5. "expected_cards": Promedio de tarjetas totales sumadas en el partido (amarillas + rojas de ambos, rango: 1.0 a 8.0).
+6. "expected_fouls": Promedio de faltas totales sumadas en el partido por ambos equipos (rango: 15.0 a 35.0).
 
 Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin bloques markdown ```json adicionales, solo el texto JSON puro para json.loads):
 {{
@@ -53,7 +54,8 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin
   "visitor_expected_goals": 1.20,
   "local_expected_corners": 5.5,
   "visitor_expected_corners": 4.0,
-  "expected_cards": 4.5
+  "expected_cards": 4.5,
+  "expected_fouls": 24.5
 }}
 """
         system_instruction = "Eres un analista de datos cuantitativos deportivos de nivel profesional. Extrae exclusivamente las variables estadísticas y responde con el JSON puro solicitado en español."
@@ -74,12 +76,13 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin
                 "visitor_expected_goals": 1.2,
                 "local_expected_corners": 5.0,
                 "visitor_expected_corners": 4.0,
-                "expected_cards": 4.0
+                "expected_cards": 4.0,
+                "expected_fouls": 24.0
             }
 
     def _run_monte_carlo_simulation(self, local_lambda: float, visitor_lambda: float, 
                                     local_corners_mean: float, visitor_corners_mean: float, 
-                                    cards_mean: float) -> dict:
+                                    cards_mean: float, fouls_mean: float = 24.0) -> dict:
         """
         Ejecuta 10,000 simulaciones de Poisson en Python para obtener probabilidades de apuestas precisas.
         """
@@ -103,12 +106,17 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin
         over_3_5_cards = 0
         over_4_5_cards = 0
         over_5_5_cards = 0
+
+        over_21_5_fouls = 0
+        over_25_5_fouls = 0
+        over_29_5_fouls = 0
         
         total_goles_local = 0
         total_goles_visitante = 0
         total_corners_local = 0
         total_corners_visitor = 0
         total_cards = 0
+        total_fouls = 0
         
         # Poisson helper
         def poisson_random(lmbda):
@@ -135,7 +143,7 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin
             else:
                 visitor_wins += 1
                 
-            # Over/Under
+            # Over/Under Goles
             total_goals = g_l + g_v
             if total_goals > 1.5:
                 over_1_5 += 1
@@ -144,14 +152,16 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin
             if total_goals > 3.5:
                 over_3_5 += 1
                 
-            # Corners y Tarjetas
+            # Corners, Tarjetas y Faltas
             c_l = max(0, poisson_random(local_corners_mean))
             c_v = max(0, poisson_random(visitor_corners_mean))
             cards = max(0, poisson_random(cards_mean))
+            fouls = max(0, poisson_random(fouls_mean))
             
             total_corners_local += c_l
             total_corners_visitor += c_v
             total_cards += cards
+            total_fouls += fouls
             
             total_corners = c_l + c_v
             if total_corners > 8.5:
@@ -167,6 +177,13 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin
                 over_4_5_cards += 1
             if cards > 5.5:
                 over_5_5_cards += 1
+
+            if fouls > 21.5:
+                over_21_5_fouls += 1
+            if fouls > 25.5:
+                over_25_5_fouls += 1
+            if fouls > 29.5:
+                over_29_5_fouls += 1
             
         return {
             "probabilidad_victoria_local": (local_wins / simulations_count) * 100,
@@ -181,11 +198,15 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin
             "probabilidad_over_3_5_cards": (over_3_5_cards / simulations_count) * 100,
             "probabilidad_over_4_5_cards": (over_4_5_cards / simulations_count) * 100,
             "probabilidad_over_5_5_cards": (over_5_5_cards / simulations_count) * 100,
+            "probabilidad_over_21_5_faltas": (over_21_5_fouls / simulations_count) * 100,
+            "probabilidad_over_25_5_faltas": (over_25_5_fouls / simulations_count) * 100,
+            "probabilidad_over_29_5_faltas": (over_29_5_fouls / simulations_count) * 100,
             "promedio_goles_local": total_goles_local / simulations_count,
             "promedio_goles_visitante": total_goles_visitante / simulations_count,
             "promedio_corners_local": total_corners_local / simulations_count,
             "promedio_corners_visitante": total_corners_visitor / simulations_count,
-            "promedio_tarjetas": total_cards / simulations_count
+            "promedio_tarjetas": total_cards / simulations_count,
+            "promedio_faltas": total_fouls / simulations_count
         }
 
     def _calculate_lineup_adjustment(self, local_team: str, visitor_team: str, lineups_data: list) -> dict:
@@ -337,14 +358,13 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin
         if stats_params["visitor_expected_goals"] < 0.1: stats_params["visitor_expected_goals"] = 0.1
             
         print(f"[SimulationEngine] Parámetros base finales (Alineación Ajustada): Lambda Local={stats_params['local_expected_goals']:.2f} | Lambda Visitante={stats_params['visitor_expected_goals']:.2f}")
-        
-        # 2. Correr la simulación masiva de Monte Carlo en Python
         monte_carlo_stats = self._run_monte_carlo_simulation(
             stats_params["local_expected_goals"],
             stats_params["visitor_expected_goals"],
             stats_params["local_expected_corners"],
             stats_params["visitor_expected_corners"],
-            stats_params["expected_cards"]
+            stats_params["expected_cards"],
+            stats_params.get("expected_fouls", 24.0)
         )
         print(f"[SimulationEngine] Monte Carlo (10k corridas) - Local Win: {monte_carlo_stats['probabilidad_victoria_local']:.1f}% | Empate: {monte_carlo_stats['probabilidad_empate']:.1f}% | Visitante Win: {monte_carlo_stats['probabilidad_victoria_visitante']:.1f}%")
         
@@ -375,13 +395,15 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin
             esc_local_corners = stats_params["local_expected_corners"] * esc["mult_corners"]
             esc_visitor_corners = stats_params["visitor_expected_corners"] * esc["mult_corners"]
             esc_cards = stats_params["expected_cards"] * esc["mult_cards"]
+            esc_fouls = stats_params.get("expected_fouls", 24.0) * esc.get("mult_cards", 1.0)
             
             # Inyectar guías estadísticas en el contexto para forzar que el LLM genere crónicas consistentes con los números
             esc_data_context = data_context.copy()
             esc_data_context["scenarios_guidelines"] = [
                 f"REGLA DE PARADO DE MARCADOR: El partido debe terminar estrictamente con goles consistentes con Poisson para este escenario (Goles locales esperados: {esc_local_lambda:.2f}, Goles visitantes esperados: {esc_visitor_lambda:.2f}).",
                 f"Corners locales esperados: {esc_local_corners:.1f}, Corners visitantes esperados: {esc_visitor_corners:.1f}",
-                f"Tarjetas esperadas sumadas en el partido: {esc_cards:.1f}"
+                f"Tarjetas esperadas sumadas en el partido: {esc_cards:.1f}",
+                f"Faltas esperadas sumadas en el partido: {esc_fouls:.1f}"
             ]
             if is_neutral:
                 esc_data_context["scenarios_guidelines"].append("DETALLE DE TORNEO: El partido se juega en cancha neutral (Mundial / Selección). NO dar ventaja de localía clásica en las descripciones.")
@@ -497,6 +519,15 @@ Por favor, corrige todos los fallos indicados y genera una nueva simulación coh
 
         prompt += f"""
 Debes simular el desarrollo minuto a minuto de las jugadas clave (goles, tarjetas, lesiones, corners) de manera realista e impredecible pero consistente con los Lineamientos Estadísticos del Escenario.
+
+REGLAS DE PRECISIÓN Y REALISMO OBLIGATORIAS:
+1. Usa ÚNICAMENTE nombres de jugadores reales que pertenezcan a la alineación titular o lista de convocados de los respectivos equipos provistas en los datos de internet. No inventes nombres ficticios.
+2. Los eventos de la crónica minuto a minuto deben estar ordenados estrictamente en orden cronológico ascendente (de menor a mayor minuto).
+3. Asegura que los minutos de todos los eventos estén dentro del rango lógico [1, 95].
+4. Si un jugador recibe una tarjeta roja (expulsión), registra este evento con precisión en la lista `tarjetas_rojas` y en la crónica. A partir de ese minuto, ese jugador NO puede realizar ninguna otra acción (anotar goles, recibir tarjetas, participar activamente). Además, el equipo afectado debe reducir su volumen ofensivo y replegarse defensivamente.
+5. No asignes más de una tarjeta amarilla al mismo jugador a menos que registres su expulsión automática por doble amonestación en el mismo minuto.
+6. La sumatoria de goles en la lista de `anotadores` para cada equipo debe coincidir exactamente con los valores de `goles_local` y `goles_visitante`.
+
 Devuelve el resultado estrictamente en el siguiente formato JSON (sin bloques markdown ni ```json adicionales, solo el texto JSON limpio):
 {{
   "simulacion_id": {sim_id},
@@ -561,6 +592,57 @@ Devuelve el resultado estrictamente en el siguiente formato JSON (sin bloques ma
         if goles_v_anotados != goles_visitante:
             errors.append(f"Inconsistencia de goles visitantes: el marcador final indica {goles_visitante} pero la lista de anotadores visitantes tiene {goles_v_anotados}.")
 
+        # --- VALIDACIÓN DETERMINISTA DE FÚTBOL EN PYTHON ---
+        red_card_minutes = {}  # jugador_name_clean: minuto
+        player_yellows = {}    # jugador_name_clean: count
+        
+        # Tarjetas rojas
+        for r in sim_data.get("tarjetas_rojas", []):
+            m = r.get("minuto", 0)
+            player = r.get("jugador", "").lower().strip()
+            if m < 1 or m > 95:
+                errors.append(f"Minuto de tarjeta roja inválido: {m} para el jugador {r.get('jugador')}.")
+            if player:
+                red_card_minutes[player] = m
+                
+        # Tarjetas amarillas
+        for y in sim_data.get("tarjetas_amarillas", []):
+            m = y.get("minuto", 0)
+            player = y.get("jugador", "").lower().strip()
+            if m < 1 or m > 95:
+                errors.append(f"Minuto de tarjeta amarilla inválido: {m} para el jugador {y.get('jugador')}.")
+            if player:
+                player_yellows[player] = player_yellows.get(player, 0) + 1
+                # Si tiene 2 amarillas y no hay roja
+                if player_yellows[player] >= 2 and player not in red_card_minutes:
+                    errors.append(f"El jugador {y.get('jugador')} acumuló {player_yellows[player]} tarjetas amarillas pero no registra tarjeta roja por expulsión.")
+                # Tarjeta amarilla después de roja
+                if player in red_card_minutes and m > red_card_minutes[player]:
+                    errors.append(f"El jugador {y.get('jugador')} recibió tarjeta amarilla en el minuto {m}, después de haber sido expulsado en el minuto {red_card_minutes[player]}.")
+
+        # Goles
+        for a in sim_data.get("anotadores", []):
+            m = a.get("minuto", 0)
+            player = a.get("jugador", "").lower().strip()
+            if m < 1 or m > 95:
+                errors.append(f"Minuto de gol inválido: {m} para el gol de {a.get('jugador')}.")
+            # Gol después de roja
+            if player in red_card_minutes and m > red_card_minutes[player]:
+                errors.append(f"El jugador {a.get('jugador')} anotó un gol en el minuto {m}, pero registra tarjeta roja (expulsado) en el minuto {red_card_minutes[player]}.")
+
+        # Orden cronológico de la crónica minuto a minuto
+        cronica = sim_data.get("cronica_minuto_a_minuto", [])
+        last_min = 0
+        import re
+        for i, line in enumerate(cronica):
+            # Buscar el primer número en la línea (suele ser "Minuto XX:" o "Min XX:")
+            match = re.search(r'\b\d+\b', line)
+            if match:
+                curr_min = int(match.group(0))
+                if curr_min < last_min:
+                    errors.append(f"La crónica minuto a minuto tiene un error temporal: la línea {i+1} menciona el minuto {curr_min} después de haber narrado eventos del minuto {last_min}.")
+                last_min = curr_min
+
         if errors:
             return False, "; ".join(errors)
 
@@ -603,6 +685,8 @@ Devuelve únicamente un JSON con este formato (sin bloques markdown ni ```json a
         """
         Detecta si el partido se juega en cancha neutral (Mundial, Copa América, Euro, etc.).
         """
+        if raw_data and raw_data.get("neutral_venue_override", False):
+            return True
         text_corpus = f"{local} {visitor}".lower()
         for key, snippets in raw_data.items():
             if isinstance(snippets, list):

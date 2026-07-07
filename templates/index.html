@@ -608,12 +608,12 @@
         /* Over/Under Progress */
         .markets-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 1.5rem;
             margin-bottom: 1.5rem;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 992px) {
             .markets-grid {
                 grid-template-columns: 1fr;
             }
@@ -973,6 +973,13 @@
                         <span id="btn-text">Iniciar Análisis</span>
                         <span id="btn-spinner" class="spinner hidden"></span>
                     </button>
+                    <!-- Checkbox Cancha Neutral -->
+                    <div style="grid-column: span 3; display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-start;">
+                        <input type="checkbox" id="neutral-checkbox" style="width: auto; cursor: pointer; accent-color: var(--accent-cyan); height: 18px; width: 18px;">
+                        <label for="neutral-checkbox" style="cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin: 0; user-select: none;">
+                            ⚽ Cancha Neutral / Sin ventaja de localía (Ej. Copa del Mundo, Eurocopa, Amistoso Internacional)
+                        </label>
+                    </div>
                 </form>
             </div>
 
@@ -1147,14 +1154,15 @@
                         </div>
                     </div>
 
-                    <!-- Over/Under y Hándicaps Grid -->
+                    <!-- Over/Under y Hándicaps Grid Rediseñado a 3 Columnas Premium -->
                     <div class="markets-grid">
-                        <div class="env-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                        <!-- Columna 1: Goles y Hándicap -->
+                        <div class="env-card" style="display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;">
                             <div class="env-card-title">
                                 <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-6h2v6zm0-8h-2V8h2v2z"/></svg>
                                 Goles y Hándicap Asiático
                             </div>
-                            <div class="market-progress-group" style="margin-bottom: 1rem;">
+                            <div class="market-progress-group">
                                 <div>
                                     <div class="progress-label-row"><span>Más de 1.5 Goles</span><strong id="val-prob-over15">50%</strong></div>
                                     <div class="bar-progress-container"><div id="bar-fill-over15" class="bar-progress-fill fill-green"></div></div>
@@ -1163,35 +1171,77 @@
                                     <div class="progress-label-row"><span>Más de 2.5 Goles</span><strong id="val-prob-over25">50%</strong></div>
                                     <div class="bar-progress-container"><div id="bar-fill-over25" class="bar-progress-fill fill-orange"></div></div>
                                 </div>
+                                <div>
+                                    <div class="progress-label-row"><span>Más de 3.5 Goles</span><strong id="val-prob-over35">50%</strong></div>
+                                    <div class="bar-progress-container"><div id="bar-fill-over35" class="bar-progress-fill fill-red"></div></div>
+                                </div>
                             </div>
-                            <div class="handicap-container">
+                            <div class="handicap-container" style="margin-top: 0.25rem;">
                                 <div class="handicap-info">
-                                    <h4>Línea de Hándicap Asiático</h4>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted);">Cuota Estimada de la Casa</div>
+                                    <h4>Hándicap Asiático</h4>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted);">Cuota Estimada</div>
                                 </div>
                                 <div>
                                     <span class="handicap-val" id="dashboard-handicap-line">Local -0.5</span>
-                                    <span style="font-size: 1rem; color: #fff; margin-left: 0.4rem; font-weight: 700;" id="dashboard-handicap-odds">(1.95)</span>
+                                    <span style="font-size: 0.95rem; color: #fff; margin-left: 0.3rem; font-weight: 700;" id="dashboard-handicap-odds">(1.95)</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="env-card">
+                        <!-- Columna 2: Tiros de Esquina (Corners) -->
+                        <div class="env-card" style="display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;">
                             <div class="env-card-title">
-                                <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
-                                Mercados Secundarios (Esquinas y Tarjetas)
+                                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                                Tiros de Esquina (Corners)
                             </div>
                             <div class="market-progress-group">
                                 <div>
-                                    <div class="progress-label-row"><span>Más de 9.5 Tiros de Esquina</span><strong id="val-prob-over95corners">50%</strong></div>
-                                    <div class="bar-progress-container"><div id="bar-fill-over95corners" class="bar-progress-fill fill-yellow"></div></div>
-                                    <div style="font-size: 0.7rem; color: var(--text-muted); text-align: right; margin-top: 0.15rem;" id="val-avg-corners">Promedio: L: 5.5 | V: 4.5</div>
+                                    <div class="progress-label-row"><span>Más de 8.5 Corners</span><strong id="val-prob-over85corners">50%</strong></div>
+                                    <div class="bar-progress-container"><div id="bar-fill-over85corners" class="bar-progress-fill fill-green"></div></div>
                                 </div>
+                                <div>
+                                    <div class="progress-label-row"><span>Más de 9.5 Corners</span><strong id="val-prob-over95corners">50%</strong></div>
+                                    <div class="bar-progress-container"><div id="bar-fill-over95corners" class="bar-progress-fill fill-yellow"></div></div>
+                                </div>
+                                <div>
+                                    <div class="progress-label-row"><span>Más de 10.5 Corners</span><strong id="val-prob-over105corners">50%</strong></div>
+                                    <div class="bar-progress-container"><div id="bar-fill-over105corners" class="bar-progress-fill fill-orange"></div></div>
+                                </div>
+                            </div>
+                            <div style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between;">
+                                <span>Promedio del Partido:</span>
+                                <strong id="val-avg-corners" style="color: #fff;">L: 5.0 | V: 4.5</strong>
+                            </div>
+                        </div>
+
+                        <!-- Columna 3: Disciplina (Tarjetas y Faltas) -->
+                        <div class="env-card" style="display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;">
+                            <div class="env-card-title">
+                                <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                                Disciplina (Tarjetas y Faltas)
+                            </div>
+                            <div class="market-progress-group">
                                 <div>
                                     <div class="progress-label-row"><span>Más de 4.5 Tarjetas</span><strong id="val-prob-over45cards">50%</strong></div>
                                     <div class="bar-progress-container"><div id="bar-fill-over45cards" class="bar-progress-fill fill-orange"></div></div>
                                     <div style="font-size: 0.7rem; color: var(--text-muted); text-align: right; margin-top: 0.15rem;" id="val-avg-cards">Promedio: 4.5 amonestaciones</div>
                                 </div>
+                                <div style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 0.5rem;">
+                                    <div class="progress-label-row"><span>Más de 21.5 Faltas</span><strong id="val-prob-over215fouls">50%</strong></div>
+                                    <div class="bar-progress-container"><div id="bar-fill-over215fouls" class="bar-progress-fill fill-yellow"></div></div>
+                                </div>
+                                <div>
+                                    <div class="progress-label-row"><span>Más de 25.5 Faltas</span><strong id="val-prob-over255fouls">50%</strong></div>
+                                    <div class="bar-progress-container"><div id="bar-fill-over255fouls" class="bar-progress-fill fill-orange"></div></div>
+                                </div>
+                                <div>
+                                    <div class="progress-label-row"><span>Más de 29.5 Faltas</span><strong id="val-prob-over295fouls">50%</strong></div>
+                                    <div class="bar-progress-container"><div id="bar-fill-over295fouls" class="bar-progress-fill fill-red"></div></div>
+                                </div>
+                            </div>
+                            <div style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between;">
+                                <span>Total Faltas Esperado:</span>
+                                <strong id="val-avg-fouls" style="color: #fff;">24.0 faltas</strong>
                             </div>
                         </div>
                     </div>
@@ -1507,15 +1557,24 @@
                 card.querySelector('.sim-score').textContent = "-";
             }
 
-            // Reset sliders to 1.0x
-            document.getElementById('slider-localia').value = 1;
+            // Reset sliders to 1.0x and handle neutral lockout
+            const isNeutral = document.getElementById('neutral-checkbox').checked;
+            const sliderLocalia = document.getElementById('slider-localia');
+            if (isNeutral) {
+                sliderLocalia.value = 1;
+                sliderLocalia.disabled = true;
+                document.getElementById('slider-localia-val').textContent = "Desactivada (Cancha Neutral)";
+            } else {
+                sliderLocalia.value = 1;
+                sliderLocalia.disabled = false;
+                document.getElementById('slider-localia-val').textContent = "1.0x (Estándar)";
+            }
             document.getElementById('slider-clima').value = 1;
             document.getElementById('slider-arbitro').value = 1;
-            document.getElementById('slider-localia-val').textContent = "1.0x (Estándar)";
             document.getElementById('slider-clima-val').textContent = "1.0x (Normal)";
             document.getElementById('slider-arbitro-val').textContent = "1.0x (Normal)";
 
-            const url = `/api/analyze?local=${encodeURIComponent(local)}&visitor=${encodeURIComponent(visitor)}`;
+            const url = `/api/analyze?local=${encodeURIComponent(local)}&visitor=${encodeURIComponent(visitor)}&neutral=${isNeutral}`;
             if (eventSource) eventSource.close();
             
             eventSource = new EventSource(url);
@@ -1617,9 +1676,19 @@
             const stats = data.market_analysis.estadisticas_simuladas || {};
             const market = data.market_analysis.datos_mercado || {};
 
-            // 1. Names
-            document.getElementById('dashboard-local-name').textContent = local;
-            document.getElementById('dashboard-visitor-name').textContent = visitor;
+            // 1. Names and Neutral venue badges
+            const sliderLocalia = document.getElementById('slider-localia');
+            if (env.es_cancha_neutral) {
+                sliderLocalia.value = 1;
+                sliderLocalia.disabled = true;
+                document.getElementById('slider-localia-val').textContent = "Desactivada (Cancha Neutral)";
+                document.getElementById('dashboard-local-name').innerHTML = `${local} <span style="font-size: 0.65rem; background: rgba(0, 240, 255, 0.12); color: var(--accent-cyan); border: 1px solid rgba(0, 240, 255, 0.25); padding: 0.15rem 0.35rem; border-radius: 4px; vertical-align: middle; margin-left: 0.4rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em;">Neutral</span>`;
+                document.getElementById('dashboard-visitor-name').innerHTML = `${visitor} <span style="font-size: 0.65rem; background: rgba(0, 240, 255, 0.12); color: var(--accent-cyan); border: 1px solid rgba(0, 240, 255, 0.25); padding: 0.15rem 0.35rem; border-radius: 4px; vertical-align: middle; margin-left: 0.4rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em;">Neutral</span>`;
+            } else {
+                sliderLocalia.disabled = false;
+                document.getElementById('dashboard-local-name').textContent = local;
+                document.getElementById('dashboard-visitor-name').textContent = visitor;
+            }
             
             // 2. Stadium
             document.getElementById('env-stadium-name').textContent = env.estadio_nombre;
@@ -1878,27 +1947,35 @@
             document.getElementById('val-market-visitor').textContent = market.cuota_visitante_estimada ? parseFloat(market.cuota_visitante_estimada).toFixed(2) : "N/A";
 
             // Over/Under Goals
-            const pO15 = stats.probabilidad_over_1_5_porcentaje;
-            const pO25 = stats.probabilidad_over_2_5_porcentaje;
-            document.getElementById('val-prob-over15').textContent = `${pO15.toFixed(1)}%`;
-            document.getElementById('bar-fill-over15').style.width = `${pO15}%`;
-            document.getElementById('val-prob-over25').textContent = `${pO25.toFixed(1)}%`;
-            document.getElementById('bar-fill-over25').style.width = `${pO25}%`;
+            document.getElementById('val-prob-over15').textContent = `${stats.probabilidad_over_1_5_porcentaje.toFixed(1)}%`;
+            document.getElementById('bar-fill-over15').style.width = `${stats.probabilidad_over_1_5_porcentaje}%`;
+            document.getElementById('val-prob-over25').textContent = `${stats.probabilidad_over_2_5_porcentaje.toFixed(1)}%`;
+            document.getElementById('bar-fill-over25').style.width = `${stats.probabilidad_over_2_5_porcentaje}%`;
+            document.getElementById('val-prob-over35').textContent = `${stats.probabilidad_over_3_5_goles_porcentaje.toFixed(1)}%`;
+            document.getElementById('bar-fill-over35').style.width = `${stats.probabilidad_over_3_5_goles_porcentaje}%`;
 
             // Over/Under Corners
-            const pCorners = stats.probabilidad_over_9_5_corners_porcentaje;
-            document.getElementById('val-prob-over95corners').textContent = `${pCorners.toFixed(1)}%`;
-            document.getElementById('bar-fill-over95corners').style.width = `${pCorners}%`;
-            const avgCLoc = stats.promedio_tiros_esquina_local || 5.0;
-            const avgCVis = stats.promedio_tiros_esquina_visitante || 4.5;
-            document.getElementById('val-avg-corners').textContent = `Promedio: L: ${avgCLoc.toFixed(1)} | V: ${avgCVis.toFixed(1)}`;
+            document.getElementById('val-prob-over85corners').textContent = `${stats.probabilidad_over_8_5_corners_porcentaje.toFixed(1)}%`;
+            document.getElementById('bar-fill-over85corners').style.width = `${stats.probabilidad_over_8_5_corners_porcentaje}%`;
+            document.getElementById('val-prob-over95corners').textContent = `${stats.probabilidad_over_9_5_corners_porcentaje.toFixed(1)}%`;
+            document.getElementById('bar-fill-over95corners').style.width = `${stats.probabilidad_over_9_5_corners_porcentaje}%`;
+            document.getElementById('val-prob-over105corners').textContent = `${stats.probabilidad_over_10_5_corners_porcentaje.toFixed(1)}%`;
+            document.getElementById('bar-fill-over105corners').style.width = `${stats.probabilidad_over_10_5_corners_porcentaje}%`;
+            document.getElementById('val-avg-corners').textContent = `L: ${stats.promedio_tiros_esquina_local.toFixed(1)} | V: ${stats.promedio_tiros_esquina_visitante.toFixed(1)}`;
 
             // Over/Under Cards
-            const pCards = stats.probabilidad_over_4_5_tarjetas_porcentaje;
-            document.getElementById('val-prob-over45cards').textContent = `${pCards.toFixed(1)}%`;
-            document.getElementById('bar-fill-over45cards').style.width = `${pCards}%`;
-            const avgCards = stats.promedio_tarjetas_amarillas || 4.5;
-            document.getElementById('val-avg-cards').textContent = `Promedio: ${avgCards.toFixed(1)} amonestaciones`;
+            document.getElementById('val-prob-over45cards').textContent = `${stats.probabilidad_over_4_5_tarjetas_porcentaje.toFixed(1)}%`;
+            document.getElementById('bar-fill-over45cards').style.width = `${stats.probabilidad_over_4_5_tarjetas_porcentaje}%`;
+            document.getElementById('val-avg-cards').textContent = `Promedio: ${stats.promedio_tarjetas_amarillas.toFixed(1)} amonestaciones`;
+
+            // Over/Under Fouls
+            document.getElementById('val-prob-over215fouls').textContent = `${stats.probabilidad_over_21_5_faltas_porcentaje.toFixed(1)}%`;
+            document.getElementById('bar-fill-over215fouls').style.width = `${stats.probabilidad_over_21_5_faltas_porcentaje}%`;
+            document.getElementById('val-prob-over255fouls').textContent = `${stats.probabilidad_over_25_5_faltas_porcentaje.toFixed(1)}%`;
+            document.getElementById('bar-fill-over255fouls').style.width = `${stats.probabilidad_over_25_5_faltas_porcentaje}%`;
+            document.getElementById('val-prob-over295fouls').textContent = `${stats.probabilidad_over_29_5_faltas_porcentaje.toFixed(1)}%`;
+            document.getElementById('bar-fill-over295fouls').style.width = `${stats.probabilidad_over_29_5_faltas_porcentaje}%`;
+            document.getElementById('val-avg-fouls').textContent = `${stats.promedio_faltas.toFixed(1)} faltas`;
 
             // Kelly pick suggestions
             document.getElementById('dashboard-pick-text').textContent = market.recomendacion_apuesta;
@@ -1922,13 +1999,14 @@
             document.getElementById('slider-arbitro-val').textContent = `${multArbitro.toFixed(1)}x ${multArbitro === 1 ? '(Normal)' : (multArbitro > 1.3 ? '(Riguroso)' : '(Permisivo)')}`;
 
             const baseStats = activeAnalysisData.market_analysis.estadisticas_simuladas;
-            const local = activeAnalysisData.local_team || "Local";
-            const visitor = activeAnalysisData.visitor_team || "Visitante";
-
+            
             // Recalculate Goal lambdas
+            const isNeutral = activeAnalysisData.environment && activeAnalysisData.environment.es_cancha_neutral;
+            const multL = isNeutral ? 1.0 : multLocalia;
+            
             let goals_l_base = baseStats.promedio_goles_local || 1.5;
             let goals_v_base = baseStats.promedio_goles_visitor || 1.1;
-            let l_lambda = goals_l_base * multLocalia * (1.2 - 0.2 * multClima);
+            let l_lambda = goals_l_base * multL * (1.2 - 0.2 * multClima);
             let v_lambda = goals_v_base * (1.2 - 0.2 * multClima);
 
             // 1X2 Probabilities
@@ -1938,29 +2016,49 @@
             const totalGoalsLambda = l_lambda + v_lambda;
             const pOver15 = cumulativePoisson(1, totalGoalsLambda) * 100;
             const pOver25 = cumulativePoisson(2, totalGoalsLambda) * 100;
+            const pOver35 = cumulativePoisson(3, totalGoalsLambda) * 100;
 
-            // Corners (Clima increases corners due to physical blocks / slippery grass)
-            const expectedCLoc = 5.0 * multClima;
-            const expectedCVis = 4.5 * multClima;
+            // Corners
+            const baseCLoc = baseStats.promedio_corners_local || 5.0;
+            const baseCVis = baseStats.promedio_corners_visitante || 4.5;
+            const expectedCLoc = baseCLoc * multClima;
+            const expectedCVis = baseCVis * multClima;
             const cornersLambda = expectedCLoc + expectedCVis;
+            const pOver85Corners = cumulativePoisson(8, cornersLambda) * 100;
             const pOver95Corners = cumulativePoisson(9, cornersLambda) * 100;
+            const pOver105Corners = cumulativePoisson(10, cornersLambda) * 100;
 
             // Cards
-            const expectedCards = 4.5 * multArbitro;
+            const baseCards = baseStats.promedio_tarjetas || 4.5;
+            const expectedCards = baseCards * multArbitro;
             const pOver45Cards = cumulativePoisson(4, expectedCards) * 100;
+
+            // Fouls
+            const baseFouls = baseStats.promedio_faltas || 24.0;
+            const expectedFouls = baseFouls * (0.8 * multArbitro + 0.2 * multClima);
+            const pOver215Fouls = cumulativePoisson(21, expectedFouls) * 100;
+            const pOver255Fouls = cumulativePoisson(25, expectedFouls) * 100;
+            const pOver295Fouls = cumulativePoisson(29, expectedFouls) * 100;
 
             // Assemble recalculated stats
             const recStats = {
                 probabilidad_local_porcentaje: p1x2.local,
-                probabilidad_empate_porcentaje: p1x2.draw,
                 probabilidad_visitante_porcentaje: p1x2.visitor,
+                probabilidad_empate_porcentaje: p1x2.draw,
                 probabilidad_over_1_5_porcentaje: pOver15,
                 probabilidad_over_2_5_porcentaje: pOver25,
+                probabilidad_over_3_5_goles_porcentaje: pOver35,
+                probabilidad_over_8_5_corners_porcentaje: pOver85Corners,
                 probabilidad_over_9_5_corners_porcentaje: pOver95Corners,
+                probabilidad_over_10_5_corners_porcentaje: pOver105Corners,
                 probabilidad_over_4_5_tarjetas_porcentaje: pOver45Cards,
+                probabilidad_over_21_5_faltas_porcentaje: pOver215Fouls,
+                probabilidad_over_25_5_faltas_porcentaje: pOver255Fouls,
+                probabilidad_over_29_5_faltas_porcentaje: pOver295Fouls,
                 promedio_tiros_esquina_local: expectedCLoc,
                 promedio_tiros_esquina_visitante: expectedCVis,
-                promedio_tarjetas_amarillas: expectedCards
+                promedio_tarjetas_amarillas: expectedCards,
+                promedio_faltas: expectedFouls
             };
 
             // Recalculate picks recommendations

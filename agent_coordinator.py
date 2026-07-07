@@ -93,7 +93,8 @@ class AgentCoordinator:
             "arbitro_nombre": "Desconocido",
             "arbitro_promedio_tarjetas": "N/A",
             "arbitro_tarjetero": "No",
-            "arbitro_estilo": "No hay información disponible sobre su rigurosidad."
+            "arbitro_estilo": "No hay información disponible sobre su rigurosidad.",
+            "es_cancha_neutral": is_neutral
         }
         
         if not referee_text and not stadium_text:
@@ -123,7 +124,7 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
   "arbitro_nombre": "Nombre completo del árbitro",
   "arbitro_promedio_tarjetas": "Promedio de tarjetas por partido (ej. 4.2 amarillas, 0.1 rojas o N/A)",
   "arbitro_tarjetero": "Sí/No (indica 'Sí' si su promedio de tarjetas es alto -más de 4.5 por partido- o si la prensa lo reporta como muy estricto)",
-  "arbitro_estilo": "Breve descripción de su estilo o rigurosidad en español (ej. Muy estricto, deja jugar, etc.)"
+  "arbitro_estilo": "Trayectoria detallada del árbitro en español (ej. Historial en partidos clave, nivel de rigurosidad, propensión a cobrar penaltis, si es protagonista o polémico, y cómo conduce el juego)."
 }}
 """
         system_instruction = "Eres un analista de datos deportivos experto y preciso. Responde única y exclusivamente con un objeto JSON estructurado en español."
@@ -137,6 +138,7 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
                     clean_response = "\n".join(lines[1:-1])
             
             env_data = json.loads(clean_response)
+            env_data["es_cancha_neutral"] = is_neutral
             # Validar claves
             for key in fallback_env:
                 if key not in env_data:
@@ -144,9 +146,10 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
             return env_data
         except Exception as e:
             print(f"[AgentCoordinator] Advertencia al extraer detalles del entorno: {e}. Usando fallback.")
+            fallback_env["es_cancha_neutral"] = is_neutral
             return fallback_env
 
-    def run_full_analysis(self, local_team: str, visitor_team: str, output_path: str = None) -> str:
+    def run_full_analysis(self, local_team: str, visitor_team: str, output_path: str = None, neutral_venue_override: bool = False) -> str:
         """
         Ejecuta el flujo completo de análisis para un partido de fútbol.
         """
@@ -155,6 +158,7 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
         # Paso 1: Recopilación de datos en Internet
         print("\n[AgentCoordinator] [Paso 1/5] Recopilando datos de Internet...")
         raw_data = self.collector.collect_all_data(local_team, visitor_team)
+        raw_data["neutral_venue_override"] = neutral_venue_override
         
         # Extraer detalles del entorno
         environment = self._extract_environment_details(raw_data, local_team, visitor_team)
@@ -197,7 +201,7 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
         print("\n[AgentCoordinator] === ANÁLISIS COMPLETADO CON ÉXITO ===")
         return report
 
-    def run_full_analysis_generator(self, local_team: str, visitor_team: str):
+    def run_full_analysis_generator(self, local_team: str, visitor_team: str, neutral_venue_override: bool = False):
         """
         Generador que ejecuta el flujo de análisis y produce actualizaciones en tiempo real.
         """
@@ -206,6 +210,7 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
             
         yield {"step": 1, "status": "recolectando", "message": "Buscando estadísticas de los últimos partidos, alineaciones, árbitro y clima en internet..."}
         raw_data = self.collector.collect_all_data(local_team, visitor_team)
+        raw_data["neutral_venue_override"] = neutral_venue_override
         
         yield {"step": 1, "status": "recolectando", "message": "Analizando y estructurando datos del estadio, clima y árbitro..."}
         environment = self._extract_environment_details(raw_data, local_team, visitor_team)
@@ -410,6 +415,8 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
         """
         Detecta si el partido se juega en cancha neutral (Mundial, Copa América, Euro, etc.).
         """
+        if raw_data and raw_data.get("neutral_venue_override", False):
+            return True
         text_corpus = f"{local} {visitor}".lower()
         for key, snippets in raw_data.items():
             if isinstance(snippets, list):

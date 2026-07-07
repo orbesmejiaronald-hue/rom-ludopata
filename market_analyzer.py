@@ -24,6 +24,7 @@ class MarketAnalyzer:
             prob_draw = monte_carlo["probabilidad_empate"]
             prob_over_1_5 = monte_carlo["probabilidad_over_1_5"]
             prob_over_2_5 = monte_carlo["probabilidad_over_2_5"]
+            prob_over_3_5 = monte_carlo.get("probabilidad_over_3_5", 25.0)
             
             prob_over_8_5_corners = monte_carlo.get("probabilidad_over_8_5_corners", 50.0)
             prob_over_9_5_corners = monte_carlo.get("probabilidad_over_9_5_corners", 40.0)
@@ -32,6 +33,11 @@ class MarketAnalyzer:
             prob_over_3_5_cards = monte_carlo.get("probabilidad_over_3_5_cards", 60.0)
             prob_over_4_5_cards = monte_carlo.get("probabilidad_over_4_5_cards", 50.0)
             prob_over_5_5_cards = monte_carlo.get("probabilidad_over_5_5_cards", 40.0)
+
+            prob_over_21_5_faltas = monte_carlo.get("probabilidad_over_21_5_faltas", 60.0)
+            prob_over_25_5_faltas = monte_carlo.get("probabilidad_over_25_5_faltas", 50.0)
+            prob_over_29_5_faltas = monte_carlo.get("probabilidad_over_29_5_faltas", 40.0)
+            avg_fouls = monte_carlo.get("promedio_faltas", 24.0)
             
             avg_goals_local = monte_carlo.get("promedio_goles_local", 1.5)
             avg_goals_visitor = monte_carlo.get("promedio_goles_visitante", 1.1)
@@ -48,6 +54,7 @@ class MarketAnalyzer:
             total_goals_visitor = 0
             over_1_5 = 0
             over_2_5 = 0
+            over_3_5 = 0
             total_corners_local = 0
             total_corners_visitor = 0
             total_yellow_cards = 0
@@ -79,6 +86,8 @@ class MarketAnalyzer:
                     over_1_5 += 1
                 if (g_local + g_visitor) > 2.5:
                     over_2_5 += 1
+                if (g_local + g_visitor) > 3.5:
+                    over_3_5 += 1
 
                 # Corners
                 c_l = sim.get("tiros_esquina_local", 5)
@@ -108,6 +117,7 @@ class MarketAnalyzer:
             prob_draw = (draws / num_sims) * 100
             prob_over_1_5 = (over_1_5 / num_sims) * 100
             prob_over_2_5 = (over_2_5 / num_sims) * 100
+            prob_over_3_5 = (over_3_5 / num_sims) * 100
 
             prob_over_8_5_corners = (over_8_5_corn / num_sims) * 100
             prob_over_9_5_corners = (over_9_5_corn / num_sims) * 100
@@ -115,6 +125,11 @@ class MarketAnalyzer:
             prob_over_3_5_cards = (over_3_5_card / num_sims) * 100
             prob_over_4_5_cards = (over_4_5_card / num_sims) * 100
             prob_over_5_5_cards = (over_5_5_card / num_sims) * 100
+            
+            prob_over_21_5_faltas = 60.0
+            prob_over_25_5_faltas = 50.0
+            prob_over_29_5_faltas = 40.0
+            avg_fouls = 24.0
 
             avg_goals_local = total_goals_local / num_sims
             avg_goals_visitor = total_goals_visitor / num_sims
@@ -262,18 +277,23 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin
                 "probabilidad_empate_porcentaje": prob_draw,
                 "probabilidad_over_1_5_porcentaje": prob_over_1_5,
                 "probabilidad_over_2_5_porcentaje": prob_over_2_5,
+                "probabilidad_over_3_5_goles_porcentaje": prob_over_3_5,
                 "probabilidad_over_8_5_corners_porcentaje": prob_over_8_5_corners,
                 "probabilidad_over_9_5_corners_porcentaje": prob_over_9_5_corners,
                 "probabilidad_over_10_5_corners_porcentaje": prob_over_10_5_corners,
                 "probabilidad_over_3_5_tarjetas_porcentaje": prob_over_3_5_cards,
                 "probabilidad_over_4_5_tarjetas_porcentaje": prob_over_4_5_cards,
                 "probabilidad_over_5_5_tarjetas_porcentaje": prob_over_5_5_cards,
+                "probabilidad_over_21_5_faltas_porcentaje": prob_over_21_5_faltas,
+                "probabilidad_over_25_5_faltas_porcentaje": prob_over_25_5_faltas,
+                "probabilidad_over_29_5_faltas_porcentaje": prob_over_29_5_faltas,
                 "promedio_goles_local": avg_goals_local,
                 "promedio_goles_visitante": avg_goals_visitor,
                 "promedio_tiros_esquina_local": avg_corners_local,
                 "promedio_tiros_esquina_visitante": avg_corners_visitor,
                 "promedio_tarjetas_amarillas": avg_yellow_cards,
-                "promedio_tarjetas_rojas": avg_red_cards
+                "promedio_tarjetas_rojas": avg_red_cards,
+                "promedio_faltas": avg_fouls
             },
             "datos_mercado": market_data
         }
