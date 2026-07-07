@@ -115,18 +115,16 @@ class DataCollector:
         match_query = f"{local_team} vs {visitor_team}"
         
         queries = {
-            "match_info": (f"{match_query} últimos partidos resultados estadísticas corners tarjetas flashscore", 4),
-            "lineups": (f"{match_query} alineaciones probables esperadas lineups flashscore", 4),
-            "referee": (f"{match_query} árbitro designado tarjetas estadísticas", 3),
-            "stadium_and_weather": (f"{match_query} estadio nombre ubicación flashscore", 3),
-            "realtime_weather_grass": (f"{match_query} tipo de césped clima pronóstico tiempo real", 3),
-            "player_rumors": (f"{local_team} {visitor_team} rumores jugadores redes sociales lesiones", 4)
+            "match_info": (f"{match_query} últimos partidos resultados estadísticas corners tarjetas", 4),
+            "lineups": (f"{match_query} alineaciones confirmadas probables lineups", 4),
+            "referee_stadium": (f"{match_query} estadio sede árbitro designado clima referee stadium", 4),
+            "player_rumors": (f"{local_team} vs {visitor_team} lesionados bajas suspendidos noticias", 4)
         }
         
         search_results = {}
         
         print("[DataCollector] Lanzando búsquedas concurrentes en internet...")
-        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             futures = {
                 executor.submit(self.search_duckduckgo, q[0], q[1]): key 
                 for key, q in queries.items()
@@ -172,27 +170,26 @@ class DataCollector:
         else:
             context_lineups = ["ESTADO DE ALINEACIONES: CONFIRMADAS EN VIVO."]
             context_lineups.extend(valid_lineups_snippets)
-
-        stadium_snippets = [res["snippet"] for res in search_results.get("stadium_and_weather", [])]
-        weather_grass_snippets = [res["snippet"] for res in search_results.get("realtime_weather_grass", [])]
+ 
+        referee_stadium_snippets = [res["snippet"] for res in search_results.get("referee_stadium", [])]
         
         # Extraer snippets
         context = {
             "match_info": [res["snippet"] for res in search_results.get("match_info", [])],
             "lineups": context_lineups,
-            "referee": [res["snippet"] for res in search_results.get("referee", [])],
-            "stadium_and_weather": stadium_snippets + weather_grass_snippets,
+            "referee": referee_stadium_snippets,
+            "stadium_and_weather": referee_stadium_snippets,
             "player_rumors": [res["snippet"] for res in search_results.get("player_rumors", [])],
             "scraped_pages": []
         }
         
-        # Opcionalmente, leer contenido de las páginas de manera concurrente
+        # Opcionalmente, leer contenido de las páginas de manera de scraping
         match_search = search_results.get("match_info", [])
         lineups_search = search_results.get("lineups", [])
-        referee_search = search_results.get("referee", [])
+        ref_stadium_search = search_results.get("referee_stadium", [])
         
         urls_to_fetch = []
-        for l in [match_search, lineups_search, referee_search]:
+        for l in [match_search, lineups_search, ref_stadium_search]:
             if l:
                 urls_to_fetch.append(l[0]["url"])
                 
