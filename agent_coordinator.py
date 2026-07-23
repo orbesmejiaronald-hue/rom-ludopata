@@ -25,7 +25,7 @@ class AgentCoordinator:
         self.tactical_analyzer = TacticalAnalyzer(self.gemini_client)
         self.sim_engine = SimulationEngine(self.gemini_client)
         self.market_analyzer = MarketAnalyzer(self.gemini_client)
-        self.report_generator = ReportGenerator()
+        self.report_generator = ReportGenerator(self.gemini_client)
 
     def _save_to_history(self, local_team: str, visitor_team: str, tactics: dict, simulations: list, market_analysis: dict, environment: dict = None):
         """

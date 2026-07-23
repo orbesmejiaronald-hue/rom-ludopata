@@ -1,12 +1,12 @@
 import json
 
 class ReportGenerator:
-    def __init__(self):
-        pass
+    def __init__(self, gemini_client=None):
+        self.gemini_client = gemini_client
 
     def generate_report(self, local_team: str, visitor_team: str, raw_data: dict, tactics: dict, simulations: list, market_analysis: dict) -> str:
         """
-        Genera el informe de pronóstico final estructurado y redactado en español.
+        Genera el informe de pronóstico final utilizando el motor SBIE v2.0 (Sports Betting Intelligence Engine).
         """
         # Formatear la lista de simulaciones para el reporte
         sims_summary = ""
@@ -15,7 +15,7 @@ class ReportGenerator:
             g_v = s.get("goles_visitante", 0)
             esc = s.get("escenario", "Estándar")
             cron = s.get("cronica_minuto_a_minuto", [])
-            cron_text = "\n   * ".join(cron[:3]) # Primeros 3 hitos para no saturar el reporte
+            cron_text = "\n   * ".join(cron[:3]) # Primeros 3 hitos
             
             pos_l = s.get("posesion_local_porcentaje")
             if pos_l is None:
@@ -23,12 +23,7 @@ class ReportGenerator:
             pos_v = 100 - pos_l
             
             sims_summary += f"""
-### Simulación {s.get('simulacion_id')}: {esc}
-*   **Resultado Simulado:** {local_team} **{g_l} - {g_v}** {visitor_team}
-*   **Posesión:** {local_team} {pos_l}% - {pos_v}% {visitor_team}
-*   **Tiros de esquina:** Local {s.get('tiros_esquina_local', 5)} | Visitante {s.get('tiros_esquina_visitante', 4)}
-*   **Cronología Clave:**
-   * {cron_text}
+* **Simulación {s.get('simulacion_id')}: {esc}** | Resultado: {local_team} {g_l} - {g_v} {visitor_team} | Posesión: {pos_l}% - {pos_v}% | Corners: {s.get('tiros_esquina_local', 5)} - {s.get('tiros_esquina_visitante', 4)}
 """
 
         # Resumen estadístico robusto
@@ -37,7 +32,7 @@ class ReportGenerator:
         stats = market_analysis.get("estadisticas_simuladas", {}) or {}
         market = market_analysis.get("datos_mercado", {}) or {}
 
-        # Saneamiento de valores estadísticos para evitar fallas de formato (.1f)
+        # Saneamiento de valores estadísticos
         for key in ['probabilidad_local_porcentaje', 'probabilidad_empate_porcentaje', 'probabilidad_visitante_porcentaje',
                     'probabilidad_over_1_5_porcentaje', 'probabilidad_over_2_5_porcentaje',
                     'probabilidad_over_8_5_corners_porcentaje', 'probabilidad_over_9_5_corners_porcentaje', 'probabilidad_over_10_5_corners_porcentaje',
@@ -52,90 +47,86 @@ class ReportGenerator:
                 else:
                     stats[key] = 33.3
 
-        # Saneamiento de valores de mercado
-        for key in ['cuota_local_estimada', 'cuota_empate_estimada', 'cuota_visitante_estimada',
-                    'handicap_asiatico_linea', 'handicap_asiatico_cuota',
-                    'cuota_over_2_5_estimada', 'cuota_under_2_5_estimada',
-                    'cuota_over_9_5_corners_estimada', 'cuota_under_9_5_corners_estimada',
-                    'cuota_over_4_5_tarjetas_estimada', 'cuota_under_4_5_tarjetas_estimada',
-                    'recomendacion_apuesta']:
-            if market.get(key) is None:
-                market[key] = "N/A"
+        # Si tenemos GeminiClient, realizamos la síntesis con la metodología SBIE v2.0
+        if self.gemini_client:
+            sbie_prompt = f"""
+Eres SBIE (Sports Betting Intelligence Engine v2.0) operando en ROM LUDOPATA.
+Genera el informe ejecutivo de análisis probabilístico para el partido: {local_team.upper()} vs {visitor_team.upper()}.
 
-        # Formatear comparativa de valor
-        comp_valor_text = ""
-        comparativa = market.get("comparativa_valor")
-        if not comparativa or not isinstance(comparativa, list):
-            comparativa = ["Sin datos comparativos de valor."]
-        for item in comparativa:
-            comp_valor_text += f"* {item}\n"
+DATOS DE ENTRADA DISPONIBLES:
+1. Análisis Táctico y Alineaciones:
+   - Formación Local: {tactics.get('local_formacion', 'Por confirmar')} | Estilo: {tactics.get('local_estilo')}
+   - Formación Visitante: {tactics.get('visitante_formacion', 'Por confirmar')} | Estilo: {tactics.get('visitante_estilo')}
+   - Enfrentamiento: {tactics.get('analisis_enfrentamiento')}
+   - Zonas Clave: {tactics.get('zonas_clave')}
+   - Alineaciones Oficiales: {tactics.get('alineaciones_oficiales')} ({tactics.get('advertencia_lineas', '')})
 
-        # Armar el reporte Markdown completo en español
-        report = f"""# ANÁLISIS PROFESIONAL Y PRONÓSTICO (SHARP BETTING): {local_team.upper()} vs {visitor_team.upper()}
+2. Entorno y Arbitraje:
+   - Árbitro: {raw_data.get('referee', ['Por confirmar'])[0] if raw_data.get('referee') else 'Desconocido'}
+   - Estadio/Clima: {raw_data.get('stadium_and_weather', ['Desconocido'])[0] if raw_data.get('stadium_and_weather') else 'Desconocido'}
+   - Noticias: {raw_data.get('player_rumors', ['Sin noticias destacadas'])[0] if raw_data.get('player_rumors') else 'Sin noticias'}
+
+3. Probabilidades de Monte Carlo (10,000 corridas):
+   - Victoria Local: {stats.get('probabilidad_local_porcentaje', 33.3):.1f}% | Empate: {stats.get('probabilidad_empate_porcentaje', 33.3):.1f}% | Victoria Visitante: {stats.get('probabilidad_visitante_porcentaje', 33.3):.1f}%
+   - Over 1.5 Goles: {stats.get('probabilidad_over_1_5_porcentaje', 50):.1f}% | Over 2.5 Goles: {stats.get('probabilidad_over_2_5_porcentaje', 50):.1f}%
+   - Corners: Local {stats.get('promedio_tiros_esquina_local', 5.0):.1f} | Visitante {stats.get('promedio_tiros_esquina_visitante', 4.0):.1f} | Over 9.5: {stats.get('probabilidad_over_9_5_corners_porcentaje', 40.0):.1f}%
+   - Disciplina: {stats.get('promedio_tarjetas_amarillas', 4.0):.1f} Amarillas | Over 4.5 Tarjetas: {stats.get('probabilidad_over_4_5_tarjetas_porcentaje', 50.0):.1f}%
+
+4. Mercado y Cuotas Estimadas:
+   - Cuotas 1X2: Local {market.get('cuota_local_estimada', 'N/A')} | Empate {market.get('cuota_empate_estimada', 'N/A')} | Visitante {market.get('cuota_visitante_estimada', 'N/A')}
+   - Pick de Referencia: {market.get('recomendacion_apuesta', 'Sin pronóstico')}
+
+Sigue estrictamente la estructura SBIE v2.0 (13 Fases) en formato GitHub Markdown limpio en español:
+1. Resumen Ejecutivo
+2. Calidad de los Datos (%) y Validación
+3. Informe del Comité de Analistas (Estadístico, Táctico, Plantilla, Psicológico, Mercado, Córners, Riesgo)
+4. Objeciones del Auditor del Diablo (¿Por qué podría fallar?)
+5. Detector de Contradicciones y Ponderación Dinámica
+6. Estimación de Probabilidades y Mercados Analizados
+7. Evaluación de Valor Esperado (+EV) y Mercados a Evitar
+8. Análisis Específico de Córners (Tiros de Esquina) y Disciplina
+9. Stake Sugerido (0 a 5) y Nivel de Confianza Objetiva
+10. Conclusión Final y Pick Recomendado
+"""
+            sbie_system_instruction = """
+Eres SBIE (Sports Betting Intelligence Engine v2.0). No eres un tipster ni haces apuestas impulsivas. Tu objetivo es realizar un análisis probabilístico objetivo sustentado únicamente en la evidencia. Si la información es limitada, debes reducir la confianza y el stake. Prohibido usar palabras como 'apuesta segura' o 'ganador garantizado'. Responde en español en formato Markdown limpio.
+"""
+            try:
+                sbie_report = self.gemini_client.generate_content(sbie_prompt, system_instruction=sbie_system_instruction)
+                if sbie_report and len(sbie_report) > 200:
+                    return sbie_report
+            except Exception as e:
+                print(f"[ReportGenerator] Advertencia al generar reporte SBIE v2.0 con Gemini ({e}). Usando plantilla local.")
+
+        # Fallback a plantilla estática estructurada si Gemini no responde
+        report = f"""# ANÁLISIS SBIE v2.0 (SPORTS BETTING INTELLIGENCE ENGINE): {local_team.upper()} vs {visitor_team.upper()}
 
 ---
 
-## 1. Análisis de Alineaciones y Tácticas
+## 1. Resumen Ejecutivo
+Análisis probabilístico realizado mediante el modelo cuantitativo Monte Carlo y evaluación multi-analista para {local_team} vs {visitor_team}.
+
+## 2. Calidad de los Datos
+*   **Estado de Alineaciones:** {tactics.get('advertencia_lineas') or 'Confirmadas en Vivo.'}
+*   **Porcentaje de Calidad Estimado:** {'80% - Datos completos' if tactics.get('alineaciones_oficiales') else '60% - Alineación por confirmar'}
+
+## 3. Análisis Táctico y de Campo
 *   **{local_team} ({tactics.get('local_formacion', '4-3-3')}):** {tactics.get('local_estilo', 'Estilo no definido.')}
 *   **{visitor_team} ({tactics.get('visitante_formacion', '4-2-3-1')}):** {tactics.get('visitante_estilo', 'Estilo no definido.')}
-*   **Enfrentamiento Táctico:** {tactics.get('analisis_enfrentamiento', 'Sin detalles de emparejamiento.')}
-*   **Zonas Clave del Campo:** {tactics.get('zonas_clave', 'Mediocampo y bandas.')}
-*   **Ventaja Táctica:** {tactics.get('ventaja_tactica', 'Ninguna clara.')}
+*   **Enfrentamiento:** {tactics.get('analisis_enfrentamiento', 'Sin detalles.')}
 
----
+## 4. Probabilidades Estimadas (Monte Carlo 10,000 Corridas)
+*   **Victoria Local ({local_team}):** {stats.get('probabilidad_local_porcentaje', 33.3):.1f}%
+*   **Empate:** {stats.get('probabilidad_empate_porcentaje', 33.3):.1f}%
+*   **Victoria Visitante ({visitor_team}):** {stats.get('probabilidad_visitante_porcentaje', 33.3):.1f}%
+*   **Over 2.5 Goles:** {stats.get('probabilidad_over_2_5_porcentaje', 50):.1f}%
+*   **Over 9.5 Corners:** {stats.get('probabilidad_over_9_5_corners_porcentaje', 40.0):.1f}%
+*   **Over 4.5 Tarjetas:** {stats.get('probabilidad_over_4_5_tarjetas_porcentaje', 50.0):.1f}%
 
-## 2. Contexto Ambiental, Árbitro y Vestuario
-*   **Árbitro:**
-    *   *Estadísticas e Historial:* {raw_data.get('referee', ['No hay información detallada del árbitro en internet.'])[0] if raw_data.get('referee') else 'No hay información.'}
-*   **Estadio y Clima:**
-    *   *Detalles:* {raw_data.get('stadium_and_weather', ['No hay información de clima disponible.'])[0] if raw_data.get('stadium_and_weather') else 'No hay información.'}
-*   **Rumores y Estado Anímico:**
-    *   *Sentimiento del Vestuario:* {raw_data.get('player_rumors', ['Sin rumores destacados recientemente.'])[0] if raw_data.get('player_rumors') else 'Sin rumores.'}
-
----
-
-## 3. Resumen Estadístico de las 10 Simulaciones Coherentes
-El motor ha ejecutado 10 simulaciones consecutivas con escenarios dinámicos (lesiones, clima, tarjetas) y 10,000 corridas del modelo matemático de Monte Carlo.
-
-*   **Probabilidad de Victoria Local ({local_team}):** {stats.get('probabilidad_local_porcentaje', 33.3):.1f}%
-*   **Probabilidad de Empate:** {stats.get('probabilidad_empate_porcentaje', 33.3):.1f}%
-*   **Probabilidad de Victoria Visitante ({visitor_team}):** {stats.get('probabilidad_visitante_porcentaje', 33.3):.1f}%
-*   **Goles Totales:**
-    *   Probabilidad Más de 1.5 Goles: {stats.get('probabilidad_over_1_5_porcentaje', 50):.1f}%
-    *   Probabilidad Más de 2.5 Goles: {stats.get('probabilidad_over_2_5_porcentaje', 50):.1f}%
-*   **Tiros de Esquina:**
-    *   Promedio Total: Local {stats.get('promedio_tiros_esquina_local', 5.0):.1f} | Visitante {stats.get('promedio_tiros_esquina_visitante', 4.0):.1f}
-    *   Probabilidad Más de 8.5 Corners: {stats.get('probabilidad_over_8_5_corners_porcentaje', 50.0):.1f}%
-    *   Probabilidad Más de 9.5 Corners: {stats.get('probabilidad_over_9_5_corners_porcentaje', 40.0):.1f}%
-    *   Probabilidad Más de 10.5 Corners: {stats.get('probabilidad_over_10_5_corners_porcentaje', 30.0):.1f}%
-*   **Tarjetas y Disciplina:**
-    *   Promedio Total: {stats.get('promedio_tarjetas_amarillas', 4.0):.1f} Amarillas y {stats.get('promedio_tarjetas_rojas', 0.2):.1f} Rojas por partido.
-    *   Probabilidad Más de 3.5 Tarjetas: {stats.get('probabilidad_over_3_5_tarjetas_porcentaje', 60.0):.1f}%
-    *   Probabilidad Más de 4.5 Tarjetas: {stats.get('probabilidad_over_4_5_tarjetas_porcentaje', 50.0):.1f}%
-    *   Probabilidad Más de 5.5 Tarjetas: {stats.get('probabilidad_over_5_5_tarjetas_porcentaje', 40.0):.1f}%
-
----
-
-## 4. Comparativa de Mercado, Hándicap Asiático e Ineficiencias (Value Betting)
-*   **Cuotas 1X2 Estimadas (Mercado):** Local: {market.get('cuota_local_estimada')} | Empate: {market.get('cuota_empate_estimada')} | Visitante: {market.get('cuota_visitante_estimada')}
-*   **Hándicap Asiático de Referencia:** {market.get('handicap_asiatico_linea')} (Cuota: {market.get('handicap_asiatico_cuota')})
-*   **Más/Menos 2.5 Goles Cuotas:** Más de 2.5: {market.get('cuota_over_2_5_estimada')} | Menos de 2.5: {market.get('cuota_under_2_5_estimada')}
-*   **Mercados de Corners y Tarjetas:**
-    *   Más de 9.5 Corners Cuota: {market.get('cuota_over_9_5_corners_estimada')} | Menos de 9.5: {market.get('cuota_under_9_5_corners_estimada')}
-    *   Más de 4.5 Tarjetas Cuota: {market.get('cuota_over_4_5_tarjetas_estimada')} | Menos de 4.5: {market.get('cuota_under_4_5_tarjetas_estimada')}
-
-### Análisis de Valor (Value Betting & Odds Analysis):
-{comp_valor_text}
-
----
-
-## 5. Recomendación y Pick de Valor (Sharp Pick)
+## 5. Recomendación y Gestión del Riesgo (SBIE v2.0)
 > [!IMPORTANT]
-> **Pick Recomendado:** {market.get('recomendacion_apuesta', 'Sin pronóstico definitivo.')}
-
----
-
-## Anexo: Bitácora de las 10 Simulaciones Auditadas
-{sims_summary}
+> **Pick de Valor:** {market.get('recomendacion_apuesta', 'Sin pronóstico definitivo.')}
+> **Stake Sugerido:** {1.5 if tactics.get('alineaciones_oficiales') else 0.5} / 5 (Gestión de Banca Conservadora)
 """
         return report
+
