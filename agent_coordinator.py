@@ -167,7 +167,7 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
         
         # Paso 2: Análisis Táctico
         print("\n[AgentCoordinator] [Paso 2/5] Realizando análisis táctico de alineaciones...")
-        tactics = self.tactical_analyzer.analyze_tactics(local_team, visitor_team, raw_data.get("lineups", []))
+        tactics = self.tactical_analyzer.analyze_tactics(local_team, visitor_team, raw_data.get("lineups", []), raw_data.get("scraped_pages", []))
         
         # Advertencia en caso de usar alineaciones no oficiales de referencia
         if not tactics.get("alineaciones_oficiales", True):
@@ -218,7 +218,7 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
         environment = self._extract_environment_details(raw_data, local_team, visitor_team)
         
         yield {"step": 2, "status": "tactico", "message": "Analizando esquemas tácticos, parados y estilos de juego..."}
-        tactics = self.tactical_analyzer.analyze_tactics(local_team, visitor_team, raw_data.get("lineups", []))
+        tactics = self.tactical_analyzer.analyze_tactics(local_team, visitor_team, raw_data.get("lineups", []), raw_data.get("scraped_pages", []))
         
         # Advertencia en caso de usar alineaciones no oficiales de referencia
         if not tactics.get("alineaciones_oficiales", True):

@@ -127,23 +127,24 @@ class DataCollector:
 
     def collect_all_data(self, local_team: str, visitor_team: str) -> dict:
         """
-        Recopila toda la información requerida del partido en internet de forma concurrente.
+        Recopila toda la información requerida del partido en internet de forma concurrente con alta precisión.
         """
         import concurrent.futures
         
         match_query = f"{local_team} vs {visitor_team}"
         
         queries = {
-            "match_info": (f"{match_query} últimos partidos resultados estadísticas corners tarjetas", 4),
-            "lineups": (f"{match_query} alineaciones confirmadas probables lineups", 4),
-            "referee_stadium": (f"{match_query} estadio sede árbitro designado clima referee stadium", 4),
-            "player_rumors": (f"{local_team} vs {visitor_team} lesionados bajas suspendidos noticias", 4)
+            "match_info": (f"{match_query} ultimos partidos resultados estadisticas corners tarjetas", 5),
+            "lineups": (f"alineaciones confirmadas {match_query} once inicial xi titulares", 5),
+            "referee": (f"árbitro {match_query}", 4),
+            "stadium_weather": (f"estadio sede {match_query} clima", 4),
+            "player_rumors": (f"{match_query} lesionados bajas suspendidos noticias", 4)
         }
         
         search_results = {}
         
-        print("[DataCollector] Lanzando búsquedas concurrentes en internet...")
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        print("[DataCollector] Lanzando búsquedas en vivo de alta precisión...")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
             futures = {
                 executor.submit(self.search_duckduckgo, q[0], q[1]): key 
                 for key, q in queries.items()
@@ -156,67 +157,50 @@ class DataCollector:
                     print(f"[DataCollector] Error en búsqueda de {key}: {e}")
                     search_results[key] = []
                     
-        # Validar rigurosamente los snippets de lineups para asegurar que correspondan a alineaciones oficiales confirmadas
+        # Validar snippets de lineups
         lineups_snippets = [res["snippet"] for res in search_results.get("lineups", [])]
         is_confirmed = False
         
-        # Palabras que indican confirmación real
-        confirmation_keywords = ["confirmada", "confirmadas", "oficial", "oficiales", "once inicial", "11 inicial", "starting xi", "lineups confirmed", "alineación titular", "titulares confirmados"]
-        # Palabras que indican especulación
-        speculative_keywords = ["probable", "probables", "posible", "posibles", "pronóstico", "predicted", "esperadas", "posible alineación"]
+        confirmation_keywords = ["confirmada", "confirmadas", "oficial", "oficiales", "once inicial", "11 inicial", "starting xi", "alineación titular", "titulares confirmados", "xi oficial", "once titular"]
         
         valid_lineups_snippets = []
         for snip in lineups_snippets:
             snip_lower = snip.lower()
-            
-            # Si contiene alguna palabra de confirmación y no es meramente una especulación
-            has_confirm = any(kw in snip_lower for kw in confirmation_keywords)
-            has_spec = any(kw in snip_lower for kw in speculative_keywords)
-            
-            # Aceptar si tiene confirmación clara
-            if has_confirm or ("once" in snip_lower or "titulares" in snip_lower and not has_spec):
+            if any(kw in snip_lower for kw in confirmation_keywords):
                 valid_lineups_snippets.append(snip)
                 is_confirmed = True
+            elif ("once" in snip_lower or "titulares" in snip_lower or "formación" in snip_lower):
+                valid_lineups_snippets.append(snip)
                 
-        # Si no pudimos verificar de forma robusta la alineación confirmada en internet
-        if not is_confirmed or not valid_lineups_snippets:
-            # Mandamos un marcador indicando que no está confirmado, pero agregamos todos los snippets disponibles
-            context_lineups = ["ESTADO DE ALINEACIONES: NO CONFIRMADAS EN VIVO. EXTRAER ALINEACIÓN PREVIA O PROBABLE A PARTIR DE LOS SIGUIENTES TEXTOS."]
-            context_lineups.extend(lineups_snippets)
-            if not lineups_snippets:
-                match_info_snippets = [res["snippet"] for res in search_results.get("match_info", [])]
-                context_lineups.extend(match_info_snippets)
-        else:
-            context_lineups = ["ESTADO DE ALINEACIONES: CONFIRMADAS EN VIVO."]
+        if is_confirmed or valid_lineups_snippets:
+            context_lineups = [f"ESTADO DE ALINEACIONES: {'CONFIRMADAS EN VIVO' if is_confirmed else 'ALINEACIONES PREVIAS / PROBABLES Extraídas de Prensa.'}"]
             context_lineups.extend(valid_lineups_snippets)
- 
-        referee_stadium_snippets = [res["snippet"] for res in search_results.get("referee_stadium", [])]
+        else:
+            context_lineups = ["ESTADO DE ALINEACIONES: EXTRAER ALINEACIÓN RECIENTE A PARTIR DEL SIGUIENTE TEXTO."]
+            context_lineups.extend(lineups_snippets if lineups_snippets else [res["snippet"] for res in search_results.get("match_info", [])])
+
+        referee_snippets = [res["snippet"] for res in search_results.get("referee", [])]
+        stadium_snippets = [res["snippet"] for res in search_results.get("stadium_weather", [])]
         
-        # Extraer snippets
         context = {
             "match_info": [res["snippet"] for res in search_results.get("match_info", [])],
             "lineups": context_lineups,
-            "referee": referee_stadium_snippets,
-            "stadium_and_weather": referee_stadium_snippets,
+            "referee": referee_snippets if referee_snippets else ["Información de árbitro no disponible."],
+            "stadium_and_weather": stadium_snippets if stadium_snippets else ["Información de estadio no disponible."],
             "player_rumors": [res["snippet"] for res in search_results.get("player_rumors", [])],
             "scraped_pages": []
         }
         
-        # Opcionalmente, leer contenido de las páginas de manera de scraping
-        match_search = search_results.get("match_info", [])
-        lineups_search = search_results.get("lineups", [])
-        ref_stadium_search = search_results.get("referee_stadium", [])
-        
+        # Descargar contenido completo de las mejores URLs para evitar alucinaciones
         urls_to_fetch = []
-        for l in [match_search, lineups_search, ref_stadium_search]:
+        for l in [search_results.get("lineups", []), search_results.get("referee", []), search_results.get("match_info", [])]:
             if l:
                 urls_to_fetch.append(l[0]["url"])
                 
-        # Limitar a máximo 3 URLs para no abusar
-        urls_to_fetch = list(set(urls_to_fetch))[:3]
+        urls_to_fetch = list(dict.fromkeys(urls_to_fetch))[:3]
         
         if urls_to_fetch:
-            print(f"[DataCollector] Descargando contenido detallado de {len(urls_to_fetch)} páginas concurrentemente...")
+            print(f"[DataCollector] Descargando contenido de {len(urls_to_fetch)} páginas clave...")
             with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
                 fetch_futures = {
                     executor.submit(self.fetch_page_text, url): url 
@@ -226,10 +210,10 @@ class DataCollector:
                     url = fetch_futures[future]
                     try:
                         page_text = future.result()
-                        if page_text:
+                        if page_text and len(page_text) > 100:
                             context["scraped_pages"].append({
                                 "url": url,
-                                "content": page_text[:2000]
+                                "content": page_text[:2500]
                             })
                     except Exception as e:
                         print(f"[DataCollector] Error descargando {url}: {e}")
