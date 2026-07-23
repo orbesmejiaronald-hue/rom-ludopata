@@ -68,34 +68,50 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como el siguie
                 
             # Limpiar opciones múltiples con barra '/' en formaciones para entregar una única formación definitiva
             for key in ["local_formacion", "visitante_formacion"]:
+                team_name = local_team if key == "local_formacion" else visitor_team
                 if analysis.get(key) and "/" in analysis[key]:
                     parts = [p.strip() for p in analysis[key].split("/") if p.strip()]
                     analysis[key] = parts[0] if parts else "4-3-3"
-                if not analysis.get(key) or analysis[key] in ["No determinada", "Desconocida", "5-3-2", "3-5-2"]:
-                    analysis[key] = "4-3-1-2" if key == "local_formacion" else "4-2-3-1"
+                    
+                # Intentar extracción directa de Flashscore por nombre de equipo si el LLM devolvió algo ambiguo
+                if not analysis.get(key) or analysis[key] in ["No determinada", "Desconocida", "5-3-2", "3-5-2", "4-3-1-2"]:
+                    import re
+                    # Buscar patrones como "Stjarnan (4-3-3)" o "Stjarnan: 4-3-3" o "4-3-3 de Stjarnan"
+                    team_match = re.search(r"\b" + re.escape(team_name[:5]) + r"[a-z]*\b.*?\b([345]-[12345]-[12345](?:-[123])?)\b", lineups_text + scraped_text, re.IGNORECASE)
+                    if team_match:
+                        analysis[key] = team_match.group(1)
+                    else:
+                        found_forms = re.findall(r"\b([345]-[12345]-[12345](?:-[123])?)\b", lineups_text + scraped_text)
+                        if found_forms:
+                            analysis[key] = found_forms[0] if key == "local_formacion" else (found_forms[1] if len(found_forms) > 1 else found_forms[0])
+                        else:
+                            analysis[key] = "4-3-3" if key == "local_formacion" else "4-2-3-1"
 
             return analysis
         except Exception as e:
-            print(f"[TacticalAnalyzer] Error decodificando JSON: {e}. Aplicando extracción regex directa.")
+            print(f"[TacticalAnalyzer] Error decodificando JSON: {e}. Aplicando extracción regex directa de Flashscore.")
             import re
-            found_forms = re.findall(r"\b([345]-[12345]-[12345](?:-[123])?)\b", lineups_text + scraped_text)
-            loc_f = "4-3-1-2"
-            vis_f = "4-2-3-1"
-            if found_forms:
-                # Filtrar formaciones defensivas extremas de plantilla
-                valid_forms = [f for f in found_forms if f not in ["5-3-2", "3-5-2"]]
-                if valid_forms:
-                    loc_f = valid_forms[0]
-                    vis_f = valid_forms[1] if len(valid_forms) > 1 else "4-2-3-1"
+            
+            loc_match = re.search(r"\b" + re.escape(local_team[:5]) + r"[a-z]*\b.*?\b([345]-[12345]-[12345](?:-[123])?)\b", lineups_text + scraped_text, re.IGNORECASE)
+            vis_match = re.search(r"\b" + re.escape(visitor_team[:5]) + r"[a-z]*\b.*?\b([345]-[12345]-[12345](?:-[123])?)\b", lineups_text + scraped_text, re.IGNORECASE)
+            
+            loc_f = loc_match.group(1) if loc_match else "4-3-3"
+            vis_f = vis_match.group(1) if vis_match else "4-2-3-1"
+            
+            if loc_f == "4-3-3" and vis_f == "4-2-3-1":
+                found_forms = re.findall(r"\b([345]-[12345]-[12345](?:-[123])?)\b", lineups_text + scraped_text)
+                if found_forms:
+                    loc_f = found_forms[0]
+                    vis_f = found_forms[1] if len(found_forms) > 1 else "4-2-3-1"
                     
             return {
                 "local_formacion": loc_f,
-                "local_estilo": "Rombo en mediocampo (4-3-1-2), presión intensa tras pérdida y ataques por pasillo interior.",
+                "local_estilo": f"Parado táctico {loc_f} de {local_team}, bloque medio dinámico y búsqueda de transiciones rápidas.",
                 "visitante_formacion": vis_f,
-                "visitante_estilo": "Doble pivote (4-2-3-1), vertiginoso por bandas y llegada del mediapunta entre líneas.",
-                "analisis_enfrentamiento": "Duelo dinámico: el rombo de St. Gallen buscará congestionar el centro, mientras Benfica explotará la amplitud por bandas.",
-                "zonas_clave": "Mediocampo y carriles exteriores.",
-                "ventaja_tactica": "Superioridad técnica y jerarquía ofensiva para Benfica en transiciones.",
+                "visitante_estilo": f"Esquema {vis_f} de {visitor_team}, posesión en mediocampo y llegada por bandas.",
+                "analisis_enfrentamiento": f"Duelo dinámico de parados tácticos ({loc_f} vs {vis_f}): control de balón e intensidad en disputas en zonas clave.",
+                "zonas_clave": "Pasillo central y carriles exteriores.",
+                "ventaja_tactica": f"Ventaja competitiva táctica ajustada al esquema {loc_f} de {local_team}.",
                 "alineaciones_oficiales": True,
                 "advertencia_lineas": ""
             }
