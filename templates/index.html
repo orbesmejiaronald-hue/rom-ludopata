@@ -102,13 +102,13 @@
         }
 
         .brand-version {
-            background: transparent;
-            border: 1px solid var(--border-card);
+            background: rgba(0, 200, 150, 0.12);
+            border: 1px solid rgba(0, 200, 150, 0.3);
             border-radius: 6px;
             padding: 0.2rem 0.6rem;
             font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted);
+            font-weight: 700;
+            color: var(--accent-primary);
         }
 
         .tagline {
@@ -277,6 +277,45 @@
 
         .btn-analyze:active {
             transform: scale(0.98);
+        }
+
+        /* Chat Chips */
+        .chat-chip {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            padding: 0.35rem 0.85rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .chat-chip:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            background: rgba(34, 211, 238, 0.08);
+        }
+
+        .swap-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-card);
+            border-radius: 8px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-cyan);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 4px;
+        }
+        .swap-btn:hover {
+            background: rgba(34, 211, 238, 0.12);
+            border-color: var(--accent-cyan);
+            transform: rotate(180deg);
         }
 
         /* Stepper */
@@ -964,11 +1003,11 @@
             <div class="brand-logo">
                 <div class="logo-box">R</div>
                 <div>
-                    <div class="brand-name">ROM LUDOPATA <span class="brand-version">1.2</span></div>
+                    <div class="brand-name">ROM LUDOPATA <span class="brand-version">1.2 (SBIE v2.0)</span></div>
                 </div>
             </div>
             <div class="tagline">
-                ANÁLISIS DE APUESTAS <span>SHARP BETTING ENGINE</span>
+                ANÁLISIS PROBABILÍSTICO <span>SBIE v2.0 QUANT ENGINE</span>
             </div>
         </header>
 
@@ -981,18 +1020,19 @@
         <!-- SECCIÓN 1: ANALIZADOR EN VIVO -->
         <div id="tab-analyzer-view" class="tab-content active">
             <!-- Formulario Principal -->
-            <div class="glass-card">
+            <div class="glass-card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
                 <form id="analyze-form" class="form-grid">
                     <div class="input-group">
                         <label for="local-input">Equipo Local</label>
                         <input type="text" id="local-input" placeholder="Ej. Real Madrid" required value="Real Madrid">
                     </div>
+                    <button type="button" class="swap-btn" onclick="swapTeams()" title="Invertir Local / Visitante">⇅</button>
                     <div class="input-group">
                         <label for="visitor-input">Equipo Visitante</label>
                         <input type="text" id="visitor-input" placeholder="Ej. Barcelona" required value="Barcelona">
                     </div>
                     <button type="submit" id="btn-submit" class="btn-analyze">
-                        <span id="btn-text">Iniciar Análisis</span>
+                        <span id="btn-text">Iniciar Análisis SBIE</span>
                         <span id="btn-spinner" class="spinner hidden"></span>
                     </button>
                     <!-- Checkbox Cancha Neutral -->
@@ -1047,10 +1087,15 @@
                 <!-- CONTENIDO PESTAÑA 1: DASHBOARD VISUAL PREMIUM -->
                 <div id="tab-dashboard" class="tab-content active">
                     <!-- Pick Recomendado (Faja Superior) -->
-                    <div class="glass-card sharp-pick-banner">
+                    <div class="glass-card sharp-pick-banner" style="box-shadow: 0 0 25px rgba(0, 200, 150, 0.12);">
                         <div class="pick-header">
-                            <span class="pick-badge">RECOMENDACIÓN FINAL (PICK DE VALOR)</span>
-                            <div id="dashboard-pick-roi" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-yellow);">VALOR DETECTADO</div>
+                            <span class="pick-badge">RECOMENDACIÓN SBIE v2.0 (PICK DE VALOR)</span>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <button type="button" class="btn-analyze" style="height: 32px; padding: 0 0.85rem; font-size: 0.75rem; background: rgba(0, 200, 150, 0.15); border-color: var(--accent-primary); color: var(--accent-primary);" onclick="copyPickToClipboard()">
+                                    📋 Copiar Pick
+                                </button>
+                                <div id="dashboard-pick-roi" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-yellow);">VALOR DETECTADO</div>
+                            </div>
                         </div>
                         <div class="pick-value" id="dashboard-pick-text">Cargando recomendación...</div>
                         <div class="pick-stake-container">
@@ -1348,6 +1393,14 @@
                     <span id="chat-status-text">Buscando...</span>
                 </div>
 
+                <!-- Quick Suggestion Chips -->
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+                    <button type="button" class="chat-chip" onclick="fillChatPrompt('¿Cuáles son los lesionados y bajas para hoy?')">🏥 Lesionados</button>
+                    <button type="button" class="chat-chip" onclick="fillChatPrompt('¿Cuál es la trayectoria y rigurosidad del árbitro?')">🟨 Árbitro</button>
+                    <button type="button" class="chat-chip" onclick="fillChatPrompt('¿Qué pronóstico hay para la línea de córners?')">🚩 Córners</button>
+                    <button type="button" class="chat-chip" onclick="fillChatPrompt('¿Existe alguna apuesta con Valor Esperado (+EV)?')">💎 Valor +EV</button>
+                </div>
+
                 <!-- Input y Botón de Envío -->
                 <form id="chat-form" style="display: flex; gap: 0.85rem; flex-shrink: 0;" onsubmit="sendChatMessage(event)">
                     <input type="text" id="chat-input" placeholder="Pregunta algo, ej. ¿Quién llega como favorito para el partido de España hoy y cuáles son sus bajas?" style="flex: 1; background: var(--bg-deep); border: 1px solid var(--border-card); padding: 0.9rem 1.1rem; border-radius: 8px; color: var(--text-main); font-size: 0.95rem; outline: none;" required autocomplete="off">
@@ -1371,7 +1424,31 @@
 
         let eventSource = null;
         let activeAnalysisData = null; // Store complete data for live client-side sliders recalculating
-        let backtestData = null; // Store fetched backtesting results
+
+        function swapTeams() {
+            const local = document.getElementById('local-input');
+            const visitor = document.getElementById('visitor-input');
+            const temp = local.value;
+            local.value = visitor.value;
+            visitor.value = temp;
+        }
+
+        function copyPickToClipboard() {
+            const pick = document.getElementById('dashboard-pick-text').textContent;
+            const stake = document.getElementById('dashboard-pick-stake').textContent;
+            const text = `🎯 Sharp Pick (ROM LUDOPATA SBIE v2.0):\n${pick}\nStake Sugerido: ${stake}`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('¡Pick copiado al portapapeles!');
+            }).catch(() => {
+                alert('Pick: ' + text);
+            });
+        }
+
+        function fillChatPrompt(text) {
+            const chatInput = document.getElementById('chat-input');
+            chatInput.value = text;
+            chatInput.focus();
+        }
 
         // 1. Tab switching logic
         function switchMainTab(tabId) {
