@@ -141,13 +141,41 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
             
             env_data = json.loads(clean_response)
             env_data["es_cancha_neutral"] = is_neutral
-            # Validar claves
+            # Validar claves y aplicar respaldo de extracción por regex si es Desconocido
             for key in fallback_env:
-                if key not in env_data:
+                if key not in env_data or not env_data[key]:
                     env_data[key] = fallback_env[key]
+                    
+            all_search_text = referee_text + " " + stadium_text + " " + scraped_content
+            import re
+            if env_data.get("arbitro_nombre") in ["Desconocido", "Por Confirmar / Desconocido", "N/A"]:
+                ref_matches = re.findall(r"(?:Árbitro|árbitro|referee|juez|arbitro)\s*:?\s*([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})", all_search_text)
+                if ref_matches:
+                    clean_ref = [r for r in ref_matches if not any(w in r.lower() for w in ["estadio", "partido", "europa", "league", "uefa"])]
+                    if clean_ref:
+                        env_data["arbitro_nombre"] = clean_ref[0]
+                        env_data["arbitro_estilo"] = f"Árbitro internacional designado: {clean_ref[0]}."
+
+            if env_data.get("estadio_nombre") in ["Desconocido", "Por Confirmar / Desconocido", "N/A"]:
+                stad_matches = re.findall(r"(?:Stadion|Estadio|Stadium|Arena)\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ0-9\-]+|[A-ZÁÉÍÓÚÑ][a-záéíóúñ0-9\-]+\s+(?:Stadion|Estadio|Stadium|Arena)", all_search_text)
+                if stad_matches:
+                    env_data["estadio_nombre"] = stad_matches[0]
+                    
             return env_data
         except Exception as e:
-            print(f"[AgentCoordinator] Advertencia al extraer detalles del entorno: {e}. Usando fallback.")
+            print(f"[AgentCoordinator] Advertencia al extraer detalles del entorno: {e}. Usando respaldo regex directo.")
+            all_search_text = referee_text + " " + stadium_text + " " + scraped_content
+            import re
+            ref_matches = re.findall(r"(?:Árbitro|árbitro|referee|juez|arbitro)\s*:?\s*([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})", all_search_text)
+            clean_ref = [r for r in ref_matches if not any(w in r.lower() for w in ["estadio", "partido", "europa", "league", "uefa"])]
+            if clean_ref:
+                fallback_env["arbitro_nombre"] = clean_ref[0]
+                fallback_env["arbitro_estilo"] = f"Árbitro internacional designado: {clean_ref[0]}."
+                
+            stad_matches = re.findall(r"(?:Stadion|Estadio|Stadium|Arena)\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ0-9\-]+|[A-ZÁÉÍÓÚÑ][a-záéíóúñ0-9\-]+\s+(?:Stadion|Estadio|Stadium|Arena)", all_search_text)
+            if stad_matches:
+                fallback_env["estadio_nombre"] = stad_matches[0]
+                
             fallback_env["es_cancha_neutral"] = is_neutral
             return fallback_env
 
