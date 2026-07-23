@@ -61,57 +61,47 @@ class GeminiClient:
         import time
         import random
 
-        model_name = "gemini-2.5-flash"
+        candidate_models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-8b"]
         max_retries = 3
         
         for attempt in range(max_retries):
-            try:
-                if self.client_type == "genai":
-                    from google.genai import types
-                    config = types.GenerateContentConfig()
-                    if system_instruction:
-                        config.system_instruction = system_instruction
-                    
-                    try:
+            for model_name in candidate_models:
+                try:
+                    if self.client_type == "genai":
+                        from google.genai import types
+                        config = types.GenerateContentConfig()
+                        if system_instruction:
+                            config.system_instruction = system_instruction
+                        
                         response = self.client.models.generate_content(
                             model=model_name,
                             contents=prompt,
                             config=config
                         )
-                        return response.text
-                    except Exception as inner_e:
-                        print(f"[GeminiClient] Error con {model_name} (intento {attempt+1}): {inner_e}. Intentando fallback a gemini-1.5-flash...")
-                        response = self.client.models.generate_content(
-                            model="gemini-1.5-flash",
-                            contents=prompt,
-                            config=config
-                        )
-                        return response.text
+                        if response and response.text:
+                            return response.text
+                    elif self.client_type == "generativeai":
+                        if system_instruction:
+                            model = self.client.GenerativeModel(
+                                model_name=model_name,
+                                system_instruction=system_instruction
+                            )
+                        else:
+                            model = self.client.GenerativeModel(model_name=model_name)
 
-                elif self.client_type == "generativeai":
-                    if system_instruction:
-                        model = self.client.GenerativeModel(
-                            model_name=model_name,
-                            system_instruction=system_instruction
-                        )
-                    else:
-                        model = self.client.GenerativeModel(model_name=model_name)
+                        response = model.generate_content(prompt)
+                        if response and response.text:
+                            return response.text
+                except Exception as inner_e:
+                    print(f"[GeminiClient] Error con modelo '{model_name}' (intento {attempt+1}): {inner_e}")
+                    time.sleep(0.5)
 
-                    try:
-                        response = model.generate_content(prompt)
-                        return response.text
-                    except Exception as inner_e:
-                        print(f"[GeminiClient] Error con {model_name} (intento {attempt+1}): {inner_e}. Intentando fallback a gemini-1.5-flash...")
-                        model = self.client.GenerativeModel(model_name="gemini-1.5-flash", system_instruction=system_instruction)
-                        response = model.generate_content(prompt)
-                        return response.text
-            except Exception as e:
-                wait_time = (2 ** attempt) + random.random()
-                print(f"[GeminiClient] Error general llamando a Gemini (intento {attempt+1}/{max_retries}): {e}. Esperando {wait_time:.2f}s antes de reintentar...")
-                if attempt == max_retries - 1:
-                    print(f"[GeminiClient] Se agotaron los reintentos para la llamada a Gemini. Usando mock de emergencia.")
-                    return self._get_mock_response(prompt)
-                time.sleep(wait_time)
+            wait_time = (2 ** attempt) + random.random()
+            print(f"[GeminiClient] Error general llamando a Gemini (intento {attempt+1}/{max_retries}). Esperando {wait_time:.2f}s antes de reintentar...")
+            if attempt == max_retries - 1:
+                print(f"[GeminiClient] Se agotaron los reintentos para la llamada a Gemini. Usando mock de emergencia.")
+                return self._get_mock_response(prompt)
+            time.sleep(wait_time)
 
     def generate_content_stream(self, prompt: str, system_instruction: str = None):
         """
@@ -129,70 +119,62 @@ class GeminiClient:
                 time.sleep(0.02)
             return
 
-        model_name = "gemini-2.5-flash"
+        import time
+        import random
+        candidate_models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-8b"]
         max_retries = 3
         
         for attempt in range(max_retries):
-            try:
-                if self.client_type == "genai":
-                    from google.genai import types
-                    config = types.GenerateContentConfig()
-                    if system_instruction:
-                        config.system_instruction = system_instruction
-                    
-                    try:
+            for model_name in candidate_models:
+                try:
+                    if self.client_type == "genai":
+                        from google.genai import types
+                        config = types.GenerateContentConfig()
+                        if system_instruction:
+                            config.system_instruction = system_instruction
+                        
                         response = self.client.models.generate_content_stream(
                             model=model_name,
                             contents=prompt,
                             config=config
                         )
+                        chunk_emitted = False
                         for chunk in response:
-                            yield chunk.text
-                        return
-                    except Exception as inner_e:
-                        print(f"[GeminiClient] Error stream con {model_name} (intento {attempt+1}): {inner_e}. Intentando fallback a gemini-1.5-flash...")
-                        response = self.client.models.generate_content_stream(
-                            model="gemini-1.5-flash",
-                            contents=prompt,
-                            config=config
-                        )
-                        for chunk in response:
-                            yield chunk.text
-                        return
+                            if chunk.text:
+                                yield chunk.text
+                                chunk_emitted = True
+                        if chunk_emitted:
+                            return
+                    elif self.client_type == "generativeai":
+                        if system_instruction:
+                            model = self.client.GenerativeModel(
+                                model_name=model_name,
+                                system_instruction=system_instruction
+                            )
+                        else:
+                            model = self.client.GenerativeModel(model_name=model_name)
 
-                elif self.client_type == "generativeai":
-                    if system_instruction:
-                        model = self.client.GenerativeModel(
-                            model_name=model_name,
-                            system_instruction=system_instruction
-                        )
-                    else:
-                        model = self.client.GenerativeModel(model_name=model_name)
+                        response = model.generate_content(prompt, stream=True)
+                        chunk_emitted = False
+                        for chunk in response:
+                            if chunk.text:
+                                yield chunk.text
+                                chunk_emitted = True
+                        if chunk_emitted:
+                            return
+                except Exception as inner_e:
+                    print(f"[GeminiClient] Error stream con modelo '{model_name}' (intento {attempt+1}): {inner_e}")
+                    time.sleep(0.5)
 
-                    try:
-                        response = model.generate_content(prompt, stream=True)
-                        for chunk in response:
-                            yield chunk.text
-                        return
-                    except Exception as inner_e:
-                        print(f"[GeminiClient] Error stream con {model_name} (intento {attempt+1}): {inner_e}. Intentando fallback a gemini-1.5-flash...")
-                        model = self.client.GenerativeModel(model_name="gemini-1.5-flash", system_instruction=system_instruction)
-                        response = model.generate_content(prompt, stream=True)
-                        for chunk in response:
-                            yield chunk.text
-                        return
-            except Exception as e:
-                import time
-                import random
-                wait_time = (2 ** attempt) + random.random()
-                print(f"[GeminiClient] Error general llamando a Gemini Stream (intento {attempt+1}/{max_retries}): {e}. Esperando {wait_time:.2f}s antes de reintentar...")
-                if attempt == max_retries - 1:
-                    print(f"[GeminiClient] Se agotaron los reintentos para la llamada a Gemini Stream. Usando mock.")
-                    words = "Error al conectar con la API de Gemini. Por favor, verifica tu conexión o tu API Key.".split(" ")
-                    for word in words:
-                        yield word + " "
-                    return
-                time.sleep(wait_time)
+            wait_time = (2 ** attempt) + random.random()
+            print(f"[GeminiClient] Error general llamando a Gemini Stream (intento {attempt+1}/{max_retries}). Esperando {wait_time:.2f}s antes de reintentar...")
+            if attempt == max_retries - 1:
+                print(f"[GeminiClient] Se agotaron los reintentos para la llamada a Gemini Stream. Usando mock.")
+                words = "Error al conectar con la API de Gemini. Por favor, verifica tu conexión o tu API Key.".split(" ")
+                for word in words:
+                    yield word + " "
+                return
+            time.sleep(wait_time)
 
     def _get_mock_response(self, prompt: str) -> str:
         """
