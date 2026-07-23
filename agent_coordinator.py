@@ -468,26 +468,29 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
         """
         if raw_data and raw_data.get("neutral_venue_override", False):
             return True
-        text_corpus = f"{local} {visitor}".lower()
-        for key, snippets in raw_data.items():
-            if isinstance(snippets, list):
-                for item in snippets:
-                    if isinstance(item, str):
-                        text_corpus += " " + item.lower()
-                    elif isinstance(item, dict) and "content" in item:
-                        text_corpus += " " + str(item["content"]).lower()
-                
-        # Palabras clave de torneos neutrales o indicaciones de mundial
-        neutral_keywords = [
-            "mundial", "world cup", "copa del mundo", "copa mundial", 
-            "neutral venue", "cancha neutral", "estadio neutral", 
-            "copa america", "copa américa", "eurocopa", "juegos olímpicos"
+            
+        local_low = local.lower()
+        visitor_low = visitor.lower()
+        
+        # Equipos ucranianos jugando fuera por conflicto (ej. Dinamo Kiev en Polonia)
+        ukrainian_teams = ["dinamo kiev", "dynamo kyiv", "shakhtar", "zarja", "dnipro"]
+        if any(uk in local_low for uk in ukrainian_teams):
+            return True
+            
+        # Palabras clave explícitas de torneos internacionales en cancha neutral de selecciones
+        explicit_neutral_keywords = [
+            "copa del mundo", "copa mundial", "mundial fifa", "world cup 20",
+            "copa america 20", "copa américa 20", "eurocopa 20", "juegos olímpicos"
         ]
-        for kw in neutral_keywords:
-            if kw in text_corpus:
+        
+        snippet_text = ""
+        for key in ["match_info", "stadium_and_weather"]:
+            snippet_text += " ".join(raw_data.get(key, [])).lower() + " "
+            
+        for kw in explicit_neutral_keywords:
+            if kw in snippet_text:
                 return True
                 
-        # Si ambos equipos son selecciones nacionales
         countries = {
             "argentina", "francia", "alemania", "mexico", "méxico", "brasil", "españa", "espana", "portugal",
             "italia", "inglaterra", "países bajos", "paises bajos", "holanda", "belgica", "bélgica", "croacia",
