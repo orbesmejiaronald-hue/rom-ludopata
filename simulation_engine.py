@@ -68,17 +68,11 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin
                 clean_response = "\n".join(lines[1:-1])
                 
         try:
-            return json.loads(clean_response)
+            parsed = json.loads(clean_response)
+            return self._sanitize_stats_params(parsed)
         except Exception as e:
             print(f"[SimulationEngine] Error parseando parámetros estadísticos: {e}. Usando fallbacks realistas.")
-            return {
-                "local_expected_goals": 1.5,
-                "visitor_expected_goals": 1.2,
-                "local_expected_corners": 5.0,
-                "visitor_expected_corners": 4.0,
-                "expected_cards": 4.0,
-                "expected_fouls": 24.0
-            }
+            return self._sanitize_stats_params({})
 
     def _run_monte_carlo_simulation(self, local_lambda: float, visitor_lambda: float, 
                                     local_corners_mean: float, visitor_corners_mean: float, 

@@ -230,6 +230,7 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
             
         yield {"step": 3, "status": "simulando", "message": "Extrayendo parámetros estadísticos cuantitativos del partido..."}
         stats_params = self.sim_engine._extract_statistical_parameters(local_team, visitor_team, raw_data)
+        stats_params = self.sim_engine._sanitize_stats_params(stats_params)
         
         # Intentar cargar y calibrar el modelo Dixon-Coles en el generador
         import os
