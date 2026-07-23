@@ -156,51 +156,55 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
             stad_pattern = r"\b(?:Stadion|Estadio|Estádio|Stadium|Arena|Stadio|Stade|Park|Ground|Field|Complejo|Sportpark)\s+[A-ZÁÉÍÓÚÑ0-9\-\']+(?:\s+[A-ZÁÉÍÓÚÑa-záéíóúñ0-9\-\']+){0,3}\b|\b[A-ZÁÉÍÓÚÑ0-9\-\']+(?:\s+[A-ZÁÉÍÓÚÑa-záéíóúñ0-9\-\']+){0,3}\s+(?:Stadion|Estadio|Estádio|Stadium|Arena|Stadio|Stade|Park|Ground|Field)\b"
 
             if env_data.get("arbitro_nombre") in ["Desconocido", "Por Confirmar / Desconocido", "N/A"] or any(w in env_data.get("arbitro_nombre", "").lower() for w in ["prognóstico", "pronóstico", "estadio", "vs", "st."]):
-                # Buscar referees conocidos explicitamente
-                known_ref_match = re.search(r"\b(Boscal|Marc Boscal|Luca Pairetto|Damian Sylwestrzak|Wilmar Roldan|Damian Kos|Robert Harvey|Slavko Vincic|Sandro Schärer|Jonas Hansen)\b", all_search_text, re.IGNORECASE)
-                if known_ref_match:
-                    env_data["arbitro_nombre"] = known_ref_match.group(1).title()
-                    env_data["arbitro_estilo"] = f"Árbitro oficial internacional designado: {env_data['arbitro_nombre']}."
-                else:
-                    ref_matches = re.findall(ref_pattern, all_search_text)
-                    if ref_matches:
-                        forbidden = ["estadio", "partido", "europa", "league", "uefa", "stadium", "match", "club", "copa", "champions", "prognóstico", "pronóstico", "predicción", "horario", "apuestas", "transmisión", "cuotas", "st.", "vs"]
-                        clean_ref = [r for r in ref_matches if not any(w in r.lower() for w in forbidden)]
-                        if clean_ref:
-                            env_data["arbitro_nombre"] = clean_ref[0]
-                            env_data["arbitro_estilo"] = f"Árbitro oficial internacional designado: {clean_ref[0]}."
+                ref_matches = re.findall(ref_pattern, all_search_text)
+                if ref_matches:
+                    forbidden = ["estadio", "partido", "europa", "league", "uefa", "stadium", "match", "club", "copa", "champions", "prognóstico", "pronóstico", "predicción", "horario", "apuestas", "transmisión", "cuotas", "st.", "vs", "utc", "time", "live"]
+                    clean_ref = [r for r in ref_matches if not any(w in r.lower() for w in forbidden)]
+                    if clean_ref:
+                        env_data["arbitro_nombre"] = clean_ref[0]
+                        env_data["arbitro_estilo"] = f"Árbitro oficial designado: {clean_ref[0]}."
                     else:
-                        env_data["arbitro_nombre"] = "Luca Pairetto" # FotMob matchday referee
-                        env_data["arbitro_estilo"] = "Árbitro oficial Serie A / UEFA designado."
+                        env_data["arbitro_nombre"] = "Por Confirmar / Oficial UEFA"
+                        env_data["arbitro_estilo"] = "Árbitro en proceso de confirmación oficial."
+                else:
+                    env_data["arbitro_nombre"] = "Por Confirmar / Oficial UEFA"
+                    env_data["arbitro_estilo"] = "Árbitro en proceso de confirmación oficial."
 
             if env_data.get("estadio_nombre") in ["Desconocido", "Por Confirmar / Desconocido", "N/A", "Estadio Azteca"]:
                 stad_matches = re.findall(stad_pattern, all_search_text)
                 if stad_matches:
-                    clean_stad = [s for s in stad_matches if not any(w in s.lower() for w in ["arbitro", "referee", "uefa", "match", "official", "azteca"])]
+                    clean_stad = [s for s in stad_matches if not any(w in s.lower() for w in ["arbitro", "referee", "uefa", "match", "official", "azteca", "pairetto"])]
                     if clean_stad:
                         env_data["estadio_nombre"] = clean_stad[0]
                     else:
-                        env_data["estadio_nombre"] = "Kybunpark (Berit Sitterstadion)"
+                        env_data["estadio_nombre"] = f"Estadio Sede de {local_team}"
+                else:
+                    env_data["estadio_nombre"] = f"Estadio Sede de {local_team}"
                     
             return env_data
         except Exception as e:
-            print(f"[AgentCoordinator] Advertencia al extraer detalles del entorno: {e}. Usando respaldo regex directo multilingüe.")
+            print(f"[AgentCoordinator] Advertencia al extraer detalles del entorno: {e}. Usando respaldo dinámico.")
             all_search_text = scraped_content + " " + referee_text + " " + stadium_text
             import re
             ref_pattern = r"(?:Árbitro|árbitro|referee|Referee|Arbitre|arbitre|Schiedsrichter|scheidsrechter|Arbitro|arbitro|Sędzia|sędzia|juez principal|colegiado|pitará|dirigirá|appointed|officiating)\s*:?\s*([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})"
             stad_pattern = r"\b(?:Stadion|Estadio|Estádio|Stadium|Arena|Stadio|Stade|Park|Ground|Field|Complejo|Sportpark)\s+[A-ZÁÉÍÓÚÑ0-9\-\']+(?:\s+[A-ZÁÉÍÓÚÑa-záéíóúñ0-9\-\']+){0,3}\b|\b[A-ZÁÉÍÓÚÑ0-9\-\']+(?:\s+[A-ZÁÉÍÓÚÑa-záéíóúñ0-9\-\']+){0,3}\s+(?:Stadion|Estadio|Estádio|Stadium|Arena|Stadio|Stade|Park|Ground|Field)\b"
             
-            forbidden = ["estadio", "partido", "europa", "league", "uefa", "stadium", "match", "club", "copa", "champions", "prognóstico", "pronóstico", "predicción", "horario", "apuestas", "transmisión", "cuotas", "st.", "vs"]
+            forbidden = ["estadio", "partido", "europa", "league", "uefa", "stadium", "match", "club", "copa", "champions", "prognóstico", "pronóstico", "predicción", "horario", "apuestas", "transmisión", "cuotas", "st.", "vs", "utc", "time", "live"]
             ref_matches = re.findall(ref_pattern, all_search_text)
             clean_ref = [r for r in ref_matches if not any(w in r.lower() for w in forbidden)]
             if clean_ref:
                 fallback_env["arbitro_nombre"] = clean_ref[0]
-                fallback_env["arbitro_estilo"] = f"Árbitro oficial internacional designado: {clean_ref[0]}."
+                fallback_env["arbitro_estilo"] = f"Árbitro oficial designado: {clean_ref[0]}."
+            else:
+                fallback_env["arbitro_nombre"] = "Por Confirmar / Oficial UEFA"
+                fallback_env["arbitro_estilo"] = "Árbitro en proceso de confirmación oficial."
                 
             stad_matches = re.findall(stad_pattern, all_search_text)
-            clean_stad = [s for s in stad_matches if not any(w in s.lower() for w in ["arbitro", "referee", "uefa", "match", "official", "azteca"])]
+            clean_stad = [s for s in stad_matches if not any(w in s.lower() for w in ["arbitro", "referee", "uefa", "match", "official", "azteca", "pairetto"])]
             if clean_stad:
                 fallback_env["estadio_nombre"] = clean_stad[0]
+            else:
+                fallback_env["estadio_nombre"] = f"Estadio Sede de {local_team}"
                 
             fallback_env["es_cancha_neutral"] = is_neutral
             return fallback_env
