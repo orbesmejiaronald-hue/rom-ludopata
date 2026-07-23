@@ -61,7 +61,7 @@ class GeminiClient:
         import time
         import random
 
-        candidate_models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-flash-latest"]
+        candidate_models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite-001", "gemini-flash-latest"]
         max_retries = 3
         
         for attempt in range(max_retries):
@@ -121,7 +121,7 @@ class GeminiClient:
 
         import time
         import random
-        candidate_models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-flash-latest"]
+        candidate_models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite-001", "gemini-flash-latest"]
         max_retries = 3
         
         for attempt in range(max_retries):
