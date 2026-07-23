@@ -134,16 +134,17 @@ class DataCollector:
         match_query = f"{local_team} vs {visitor_team}"
         
         queries = {
-            "match_info": (f"{match_query} ultimos partidos resultados estadisticas corners tarjetas", 5),
-            "lineups": (f"alineaciones confirmadas {match_query} once inicial xi titulares", 5),
-            "referee": (f"árbitro {match_query}", 4),
-            "stadium_weather": (f"estadio sede {match_query} clima", 4),
+            "flashscore_data": (f"site:flashscore.pe OR site:flashscore.es OR site:sofascore.com OR site:besoccer.com {match_query} alineaciones arbitro estadio", 6),
+            "match_info": (f"{match_query} ultimos partidos resultados estadisticas corners tarjetas flashscore", 5),
+            "lineups": (f"alineaciones confirmadas {match_query} once inicial xi titulares flashscore", 5),
+            "referee": (f"árbitro {match_query} flashscore uefa", 5),
+            "stadium_weather": (f"estadio sede {match_query} clima flashscore", 5),
             "player_rumors": (f"{match_query} lesionados bajas suspendidos noticias", 4)
         }
         
         search_results = {}
         
-        print("[DataCollector] Lanzando búsquedas en vivo de alta precisión...")
+        print("[DataCollector] Lanzando búsquedas en vivo de alta precisión en Flashscore, SofaScore y UEFA...")
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
             futures = {
                 executor.submit(self.search_duckduckgo, q[0], q[1]): key 
@@ -154,11 +155,52 @@ class DataCollector:
                 try:
                     search_results[key] = future.result()
                 except Exception as e:
-                    print(f"[DataCollector] Error en búsqueda de {key}: {e}")
+                    print(f"[DataCollector] Error en consulta '{key}': {e}")
                     search_results[key] = []
+
+        # Extraer snippets para el dict final
+        raw_data = {
+            "match_info": [r["snippet"] for r in search_results.get("match_info", []) if r.get("snippet")],
+            "lineups": [r["snippet"] for r in search_results.get("lineups", []) if r.get("snippet")],
+            "referee": [r["snippet"] for r in search_results.get("referee", []) if r.get("snippet")],
+            "stadium_and_weather": [r["snippet"] for r in search_results.get("stadium_weather", []) if r.get("snippet")],
+            "player_rumors": [r["snippet"] for r in search_results.get("player_rumors", []) if r.get("snippet")],
+            "flashscore_data": [r["snippet"] for r in search_results.get("flashscore_data", []) if r.get("snippet")]
+        }
+
+        # Descargar el texto completo de las páginas más relevantes prioritariamente de Flashscore, SofaScore y FotMob
+        urls_to_scrape = []
+        for key in ["flashscore_data", "lineups", "referee", "stadium_weather"]:
+            for item in search_results.get(key, []):
+                url = item.get("url")
+                if url and url not in urls_to_scrape:
+                    # Priorizar dominios de datos deportivos en vivo
+                    if any(domain in url for domain in ["flashscore", "sofascore", "besoccer", "fotmob", "as.com", "marca.com", "uefa.com"]):
+                        urls_to_scrape.insert(0, url)
+                    else:
+                        urls_to_scrape.append(url)
+                    if len(urls_to_scrape) >= 5:
+                        break
+            if len(urls_to_scrape) >= 5:
+                break
+                
+        print(f"[DataCollector] Descargando contenido en vivo de {len(urls_to_scrape)} fuentes de datos clave (Flashscore, SofaScore, UEFA)...")
+        scraped_pages = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            future_to_url = {executor.submit(self.fetch_page_text, url): url for url in urls_to_scrape}
+            for future in concurrent.futures.as_completed(future_to_url):
+                url = future_to_url[future]
+                try:
+                    text = future.result()
+                    if text and len(text) > 100:
+                        scraped_pages.append({"url": url, "content": text})
+                except Exception as e:
+                    print(f"[DataCollector] Error raspando {url}: {e}")
+                    
+        raw_data["scraped_pages"] = scraped_pages
                     
         # Validar snippets de lineups
-        lineups_snippets = [res["snippet"] for res in search_results.get("lineups", [])]
+        lineups_snippets = raw_data["lineups"]
         is_confirmed = False
         
         confirmation_keywords = ["confirmada", "confirmadas", "oficial", "oficiales", "once inicial", "11 inicial", "starting xi", "alineación titular", "titulares confirmados", "xi oficial", "once titular"]
