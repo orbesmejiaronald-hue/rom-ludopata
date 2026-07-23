@@ -13,24 +13,43 @@ class DataCollector:
 
     def search_duckduckgo(self, query: str, max_results: int = 5):
         """
-        Busca en DuckDuckGo (HTML libre de JavaScript) y extrae enlaces y resúmenes de forma robusta.
-        Soporta reintentos y rotación de User-Agent.
+        Busca en DuckDuckGo usando la librería oficial 'duckduckgo_search' (DDGS) de forma gratuita.
+        Soporta fallback a raspado HTML si falla.
         """
         import time
         import random
         
+        print(f"[DataCollector] Buscando en internet: '{query}'...")
+        time.sleep(random.uniform(0.1, 0.5))
+        
+        # Intento 1: Usar DDGS de la librería oficial ddgs / duckduckgo_search
+        try:
+            try:
+                from ddgs import DDGS
+            except ImportError:
+                from duckduckgo_search import DDGS
+            with DDGS() as ddgs:
+                raw_results = list(ddgs.text(query, max_results=max_results))
+                if raw_results:
+                    formatted_results = []
+                    for item in raw_results:
+                        formatted_results.append({
+                            "url": item.get("href") or item.get("url", ""),
+                            "snippet": item.get("body") or item.get("snippet", "")
+                        })
+                    if formatted_results:
+                        return formatted_results
+        except Exception as e:
+            print(f"[DataCollector] Advertencia con DDGS ({e}). Intentando fallback a raspado HTML...")
+        
+        # Intento 2: Fallback a raspado directo HTML
+        url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(query)}"
         user_agents = [
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0",
             "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
         ]
-        
-        print(f"[DataCollector] Buscando en internet: '{query}'...")
-        url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(query)}"
-        
-        # Introducir un pequeño retardo inicial aleatorio para escalonar las peticiones concurrentes
-        time.sleep(random.uniform(0.2, 1.2))
         
         for attempt in range(3):
             try:
@@ -76,7 +95,7 @@ class DataCollector:
                     if results:
                         return results
                     
-                print(f"[DataCollector] DuckDuckGo devolvió estado {response.status_code} o sin resultados. Reintentando...")
+                print(f"[DataCollector] DuckDuckGo HTML devolvió estado {response.status_code} o sin resultados. Reintentando...")
                 time.sleep(1 + random.random())
             except Exception as e:
                 print(f"[DataCollector] Error en intento {attempt+1} buscando '{query}': {e}")
