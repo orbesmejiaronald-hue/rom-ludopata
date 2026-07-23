@@ -186,7 +186,7 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
         
         # Paso 5: Generación del Reporte en Español
         print("\n[AgentCoordinator] [Paso 5/5] Generando el reporte de pronóstico en español...")
-        report = self.report_generator.generate_report(local_team, visitor_team, raw_data, tactics, simulations, market_analysis)
+        report = self.report_generator.generate_report(local_team, visitor_team, raw_data, tactics, simulations, market_analysis, environment=environment)
         
         # Guardar en el historial estructurado local
         self._save_to_history(local_team, visitor_team, tactics, simulations, market_analysis, environment)
