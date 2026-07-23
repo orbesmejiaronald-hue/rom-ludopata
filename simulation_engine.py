@@ -322,6 +322,46 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin
             "f_defense_visitor": f_def_visitor
         }
 
+    def _estimate_dynamic_xg(self, local_team: str, visitor_team: str, scraped_text: str = "") -> tuple:
+        """
+        Estima lambdas cuantitativas (xG esperados) mediante jerarquía de Tiers y raspado de prensa.
+        Evita el fallback plano de 1.5 vs 1.5.
+        """
+        local_low = local_team.lower()
+        visitor_low = visitor_team.lower()
+        
+        tier_1 = ["benfica", "porto", "sporting", "twente", "psv", "ajax", "feyenoord", "partizan", "red star", "crvena zvezda", "dinamo zagreb", "hajduk", "koper", "maribor", "olimpija", "real madrid", "barcelona", "bayern", "manchester"]
+        tier_2 = ["ferencvaros", "ferencváros", "st. gallen", "st gallen", "pafos", "shelbourne", "viktoria plzen", "slovan", "sparta praga", "slavia"]
+        tier_3 = ["runavik", "runavík", "una strassen", "strassen", "nomme kalju", "nõmme kalju", "b36", "vikingur", "diddeleng"]
+        
+        def get_tier(team):
+            if any(t in team for t in tier_1): return 1
+            if any(t in team for t in tier_2): return 2
+            if any(t in team for t in tier_3): return 3
+            return 2
+            
+        t_loc = get_tier(local_low)
+        t_vis = get_tier(visitor_low)
+        
+        base_l = 1.65
+        base_v = 1.25
+        
+        diff = t_vis - t_loc
+        if diff >= 2:
+            base_l = 2.65
+            base_v = 0.45
+        elif diff == 1:
+            base_l = 2.05
+            base_v = 0.85
+        elif diff == -1:
+            base_l = 0.95
+            base_v = 2.15
+        elif diff <= -2:
+            base_l = 0.55
+            base_v = 2.45
+            
+        return base_l, base_v
+
     def run_all_simulations(self, local_team: str, visitor_team: str, data_context: dict, tactical_analysis: dict) -> list:
         """
         Ejecuta 10 simulaciones consecutivas con escenarios variados guiados por el modelo de Poisson.
@@ -357,11 +397,20 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin
                     stats_params["visitor_expected_goals"] = prediction["away_lambda"]
                     print(f"[SimulationEngine] Dixon-Coles base lambda (calibrado): {local_team}={stats_params['local_expected_goals']:.3f} | {visitor_team}={stats_params['visitor_expected_goals']:.3f}")
                 else:
-                    print(f"[SimulationEngine] Equipos no encontrados en la base de datos calibrada de Dixon-Coles. Usando estimación de goles de LLM ({stats_params['local_expected_goals']:.2f} vs {stats_params['visitor_expected_goals']:.2f}).")
+                    dyn_l, dyn_v = self._estimate_dynamic_xg(local_team, visitor_team, str(data_context))
+                    stats_params["local_expected_goals"] = dyn_l
+                    stats_params["visitor_expected_goals"] = dyn_v
+                    print(f"[SimulationEngine] Equipos no encontrados en la DB calibrada de Dixon-Coles. Usando calibración dinámico por Tier de Liga y xG ({local_team}={dyn_l:.2f} vs {visitor_team}={dyn_v:.2f}).")
             except Exception as e:
-                print(f"[SimulationEngine] Advertencia: No se pudo calibrar Dixon-Coles ({e}). Usando lambdas de LLM.")
+                print(f"[SimulationEngine] Advertencia: No se pudo calibrar Dixon-Coles ({e}). Usando calibración dinámico por Tier de Liga y xG.")
+                dyn_l, dyn_v = self._estimate_dynamic_xg(local_team, visitor_team, str(data_context))
+                stats_params["local_expected_goals"] = dyn_l
+                stats_params["visitor_expected_goals"] = dyn_v
         else:
-            print(f"[SimulationEngine] No se encontró historical_results.json. Usando lambdas de LLM.")
+            print(f"[SimulationEngine] No se encontró historical_results.json. Usando calibración dinámico por Tier de Liga y xG.")
+            dyn_l, dyn_v = self._estimate_dynamic_xg(local_team, visitor_team, str(data_context))
+            stats_params["local_expected_goals"] = dyn_l
+            stats_params["visitor_expected_goals"] = dyn_v
             
         # Ajuste dinámico por alineación titular oficial
         lineup_adj = self._calculate_lineup_adjustment(local_team, visitor_team, data_context.get("lineups", []))

@@ -315,9 +315,15 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
                     stats_params["visitor_expected_goals"] = prediction["away_lambda"]
                     yield {"step": 3, "status": "simulando", "message": f"Dixon-Coles calibrado: Lambda {local_team}={stats_params['local_expected_goals']:.2f} | Lambda {visitor_team}={stats_params['visitor_expected_goals']:.2f}"}
                 else:
-                    yield {"step": 3, "status": "simulando", "message": f"Equipos no encontrados en la base de datos de Dixon-Coles. Usando estimaciones de goles de LLM (L:{stats_params['local_expected_goals']:.2f} | V:{stats_params['visitor_expected_goals']:.2f})"}
+                    dyn_l, dyn_v = self.sim_engine._estimate_dynamic_xg(local_team, visitor_team, str(raw_data))
+                    stats_params["local_expected_goals"] = dyn_l
+                    stats_params["visitor_expected_goals"] = dyn_v
+                    yield {"step": 3, "status": "simulando", "message": f"Calibración Dinámica de xG por Tier de Liga ({local_team}={dyn_l:.2f} vs {visitor_team}={dyn_v:.2f})"}
             except Exception as e:
-                yield {"step": 3, "status": "simulando", "message": f"Advertencia: No se pudo calibrar Dixon-Coles ({str(e)}). Usando lambdas de LLM."}
+                dyn_l, dyn_v = self.sim_engine._estimate_dynamic_xg(local_team, visitor_team, str(raw_data))
+                stats_params["local_expected_goals"] = dyn_l
+                stats_params["visitor_expected_goals"] = dyn_v
+                yield {"step": 3, "status": "simulando", "message": f"Calibración Dinámica de xG por Tier de Liga ({local_team}={dyn_l:.2f} vs {visitor_team}={dyn_v:.2f})"}
         
         # Aplicar el ajuste de alineación por coeficientes de jugador titular
         yield {"step": 3, "status": "simulando", "message": "Calculando coeficientes de rendimiento de los jugadores en la alineación titular..."}
