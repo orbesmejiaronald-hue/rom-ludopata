@@ -466,55 +466,25 @@ class GeminiClient:
 
         # Caso Detalles del Entorno (Estadio, Clima, Árbitro)
         if "entorno del partido" in prompt or "estadio_nombre" in prompt:
-            local_match = re.search(r"Local:\s*([^\n]+)", prompt)
-            visitor_match = re.search(r"Visitante:\s*([^\n]+)", prompt)
-            local = local_match.group(1).strip() if local_match else "Local"
-            visitor = visitor_match.group(1).strip() if visitor_match else "Visitante"
+            # Extraer nombres reales del prompt si están presentes
+            ref_match = re.search(r"(?:Árbitro|árbitro|referee|juez principal|árbitros)\s*(?:es|será|:|designado)?\s*([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})", prompt)
+            ref_name = ref_match.group(1).strip() if ref_match and len(ref_match.group(1).strip()) > 3 else "Por Confirmar / Desconocido"
             
-            def get_hash_val(name1, name2):
-                return sum(ord(c) for c in (name1 + name2))
-            hash_val = get_hash_val(local, visitor)
+            stad_match = re.search(r"([A-ZÁÉÍÓÚÑ][a-záéíóúñ0-9\-]+\s+(?:Stadium|Arena|Estadio|Stadion)|(?:Stadium|Arena|Estadio|Stadion)\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ0-9\-]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ0-9\-]+)?)", prompt)
+            stad_name = stad_match.group(1).strip() if stad_match and len(stad_match.group(1).strip()) > 3 else "Por Confirmar / Desconocido"
             
-            referees = [
-                {"name": "Jesús Gil Manzano", "cards": "5.3 amarillas, 0.2 rojas", "style": "Riguroso y dialoga poco, saca tarjetas rápido.", "strict": "Sí"},
-                {"name": "César Arturo Ramos", "cards": "4.1 amarillas, 0.1 rojas", "style": "De libre fluidez, pita solo contactos claros.", "strict": "No"},
-                {"name": "Wilmar Roldán", "cards": "6.2 amarillas, 0.4 rojas", "style": "Estilo riguroso, saca tarjetas rápido ante protestas.", "strict": "Sí"},
-                {"name": "Szymon Marciniak", "cards": "3.8 amarillas, 0.1 rojas", "style": "Control calmado del temperamento, deja jugar.", "strict": "No"},
-                {"name": "Michael Oliver", "cards": "4.4 amarillas, 0.2 rojas", "style": "Permisivo con el contacto físico, castiga la reiteración.", "strict": "No"}
-            ]
-            ref = referees[hash_val % len(referees)]
-            
-            # Detectar si es neutral (Mundial)
-            is_neutral = any(kw in prompt.lower() for kw in ["mundial", "world cup", "copa del mundo", "neutral"])
-            
-            if is_neutral:
-                stadiums = [
-                    {"name": "Estadio Olímpico de Berlín", "cap": "74,475", "grass": "Natural", "impact": "Cancha neutral (Eurocopa / Torneo Europeo). Sin ventaja de localía clásica."},
-                    {"name": "Estadio de Lusail", "cap": "88,966", "grass": "Natural", "impact": "Cancha neutral en Qatar (Copa del Mundo). Césped refrigerado, sin ventaja de localía."},
-                    {"name": "MetLife Stadium", "cap": "82,500", "grass": "Híbrido", "impact": "Cancha neutral en EE.UU. (Copa América / Mundial). Sin ventaja de localía clásica."}
-                ]
-                stadium = stadiums[hash_val % len(stadiums)]
-            else:
-                stadium = {
-                    "name": f"Estadio del {local}",
-                    "cap": f"{35000 + (hash_val % 8) * 7000:,} espectadores",
-                    "grass": "Natural" if (hash_val % 2 == 0) else "Híbrido",
-                    "impact": f"Fuerte localía. La afición de {local} ejerce presión y genera un ambiente hostil para el visitante."
-                }
-                
-            climates = ["Despejado, 22°C, humedad 45%", "Lluvia ligera, 16°C, césped rápido", "Nublado, 19°C, viento moderado", "Soleado, 28°C, calor seco"]
-            weather = climates[hash_val % len(climates)]
+            is_neutral = any(kw in prompt.lower() for kw in ["mundial", "world cup", "copa del mundo", " neutral"])
             
             return json.dumps({
-                "estadio_nombre": stadium["name"],
-                "estadio_capacidad": stadium["cap"],
-                "estadio_cesped": stadium["grass"],
-                "estadio_localia_impacto": stadium["impact"],
-                "clima_pronostico": weather,
-                "arbitro_nombre": ref["name"],
-                "arbitro_promedio_tarjetas": ref["cards"],
-                "arbitro_tarjetero": ref["strict"],
-                "arbitro_estilo": ref["style"]
+                "estadio_nombre": stad_name,
+                "estadio_capacidad": "N/A",
+                "estadio_cesped": "Natural",
+                "estadio_localia_impacto": "Cancha neutral sin ventaja de localía." if is_neutral else "Información de localía en tiempo real.",
+                "clima_pronostico": "Despejado / Clima estándar",
+                "arbitro_nombre": ref_name,
+                "arbitro_promedio_tarjetas": "N/A",
+                "arbitro_tarjetero": "No",
+                "arbitro_estilo": f"Designación oficial de árbitro: {ref_name}." if ref_name != "Por Confirmar / Desconocido" else "Sin datos históricos del árbitro."
             }, ensure_ascii=False)
 
         # Fallback genérico de JSON
