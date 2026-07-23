@@ -146,8 +146,7 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
                 if key not in env_data or not env_data[key]:
                     env_data[key] = fallback_env[key]
                     
-            all_search_text = referee_text + " " + stadium_text + " " + scraped_content
-            all_search_text = referee_text + " " + stadium_text + " " + scraped_content
+            all_search_text = scraped_content + " " + referee_text + " " + stadium_text
             import re
             
             # Patrón universal multilingüe para Árbitro
@@ -174,7 +173,7 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
             return env_data
         except Exception as e:
             print(f"[AgentCoordinator] Advertencia al extraer detalles del entorno: {e}. Usando respaldo regex directo multilingüe.")
-            all_search_text = referee_text + " " + stadium_text + " " + scraped_content
+            all_search_text = scraped_content + " " + referee_text + " " + stadium_text
             import re
             ref_pattern = r"(?:Árbitro|árbitro|referee|Referee|Arbitre|arbitre|Schiedsrichter|scheidsrechter|Arbitro|arbitro|Sędzia|sędzia|juez principal|colegiado|pitará|dirigirá|appointed|officiating)\s*:?\s*([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})"
             stad_pattern = r"\b(?:Stadion|Estadio|Estádio|Stadium|Arena|Stadio|Stade|Park|Ground|Field|Complejo|Sportpark)\s+[A-ZÁÉÍÓÚÑ0-9\-\']+(?:\s+[A-ZÁÉÍÓÚÑa-záéíóúñ0-9\-\']+){0,3}\b|\b[A-ZÁÉÍÓÚÑ0-9\-\']+(?:\s+[A-ZÁÉÍÓÚÑa-záéíóúñ0-9\-\']+){0,3}\s+(?:Stadion|Estadio|Estádio|Stadium|Arena|Stadio|Stade|Park|Ground|Field)\b"
