@@ -14,6 +14,34 @@ class SimulationEngine:
     def __init__(self, gemini_client):
         self.client = gemini_client
 
+    def _sanitize_stats_params(self, params: dict) -> dict:
+        """
+        Garantiza que todas las variables cuantitativas de entrada sean valores numéricos (float) válidos.
+        """
+        defaults = {
+            "local_expected_goals": 1.5,
+            "visitor_expected_goals": 1.2,
+            "local_expected_corners": 5.0,
+            "visitor_expected_corners": 4.0,
+            "expected_cards": 4.0,
+            "expected_fouls": 24.0
+        }
+        if not isinstance(params, dict):
+            return defaults
+        
+        sanitized = {}
+        for key, default_val in defaults.items():
+            val = params.get(key)
+            try:
+                val_float = float(val)
+                if val_float <= 0:
+                    val_float = default_val
+                sanitized[key] = val_float
+            except (ValueError, TypeError):
+                sanitized[key] = default_val
+                
+        return sanitized
+
     def _extract_statistical_parameters(self, local: str, visitor: str, data: dict) -> dict:
         """
         Extrae lambdas y medias estadísticas de los datos recopilados usando el LLM.
