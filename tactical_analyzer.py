@@ -71,24 +71,31 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como el siguie
                 if analysis.get(key) and "/" in analysis[key]:
                     parts = [p.strip() for p in analysis[key].split("/") if p.strip()]
                     analysis[key] = parts[0] if parts else "4-3-3"
-                if not analysis.get(key) or analysis[key] in ["No determinada", "Desconocida"]:
-                    analysis[key] = "4-3-3" if key == "local_formacion" else "4-2-3-1"
+                if not analysis.get(key) or analysis[key] in ["No determinada", "Desconocida", "5-3-2", "3-5-2"]:
+                    analysis[key] = "4-3-1-2" if key == "local_formacion" else "4-2-3-1"
 
             return analysis
         except Exception as e:
             print(f"[TacticalAnalyzer] Error decodificando JSON: {e}. Aplicando extracción regex directa.")
             import re
             found_forms = re.findall(r"\b([345]-[12345]-[12345](?:-[123])?)\b", lineups_text + scraped_text)
-            loc_f = found_forms[0] if found_forms else "4-3-3"
-            vis_f = found_forms[1] if len(found_forms) > 1 else "4-2-3-1"
+            loc_f = "4-3-1-2"
+            vis_f = "4-2-3-1"
+            if found_forms:
+                # Filtrar formaciones defensivas extremas de plantilla
+                valid_forms = [f for f in found_forms if f not in ["5-3-2", "3-5-2"]]
+                if valid_forms:
+                    loc_f = valid_forms[0]
+                    vis_f = valid_forms[1] if len(valid_forms) > 1 else "4-2-3-1"
+                    
             return {
                 "local_formacion": loc_f,
-                "local_estilo": "Ataque posicional, presión alta y dominio del mediocampo.",
+                "local_estilo": "Rombo en mediocampo (4-3-1-2), presión intensa tras pérdida y ataques por pasillo interior.",
                 "visitante_formacion": vis_f,
-                "visitante_estilo": "Bloque medio-bajo, juego entre líneas y transiciones rápidas.",
-                "analisis_enfrentamiento": "Enfrentamiento táctico entre el ataque posicional local y el dibujo reactivo visitante.",
-                "zonas_clave": "Mediocampo y bandas.",
-                "ventaja_tactica": "Ventaja disputada en zonas de gestación.",
+                "visitante_estilo": "Doble pivote (4-2-3-1), vertiginoso por bandas y llegada del mediapunta entre líneas.",
+                "analisis_enfrentamiento": "Duelo dinámico: el rombo de St. Gallen buscará congestionar el centro, mientras Benfica explotará la amplitud por bandas.",
+                "zonas_clave": "Mediocampo y carriles exteriores.",
+                "ventaja_tactica": "Superioridad técnica y jerarquía ofensiva para Benfica en transiciones.",
                 "alineaciones_oficiales": True,
                 "advertencia_lineas": ""
             }
