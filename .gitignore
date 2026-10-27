@@ -39,3 +39,4 @@ backtest_summary.json
 .idea/
 *.iml
 .vscode/
+*.bak

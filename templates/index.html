@@ -2,2275 +2,1417 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#020617">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#07090E">
     <link rel="manifest" href="/manifest.json">
-    <!-- PWA iOS Support -->
     <link rel="apple-touch-icon" href="/static/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>ROM LUDOPATA 1.2 - Sharp Betting Engine</title>
-    <!-- Google Fonts: Outfit & Inter -->
+    <title>ROM SPORT 2.0 - Quantitative Betting Terminal</title>
+    <!-- Google Fonts: Outfit (Titulares & Números) + Inter (Lectura técnica) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Marked.js for Markdown Rendering -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Marked.js para reportes Markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
-            /* Palette: Premium Minimalist Dark Financial */
-            --bg-deep: #08090E;
-            --bg-card: #0F111A;
-            --border-card: #1E2535;
-            --text-main: #F1F5F9;
-            --text-muted: #64748B;
+            --bg-void: #05070B;
+            --bg-surface: #0B0E14;
+            --bg-card: #10141D;
+            --bg-card-hover: #161B26;
+            --bg-card-active: #1C2331;
             
-            --accent-primary: #00C896; /* Verde financiero / esmeralda mate */
-            --accent-primary-dim: rgba(0, 200, 150, 0.1);
-            --accent-secondary: #0F111A; 
+            --border-subtle: rgba(255, 255, 255, 0.07);
+            --border-bright: rgba(255, 255, 255, 0.15);
+            --border-neon: rgba(0, 229, 153, 0.4);
             
-            --accent-cyan: #22D3EE;
-            --accent-cyan-glow: rgba(34, 211, 238, 0.15);
-            --accent-blue: #3B82F6;
-            --accent-blue-glow: rgba(59, 130, 246, 0.15);
-            --accent-yellow: #F59E0B;
-            --accent-yellow-glow: rgba(245, 158, 11, 0.15);
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --text-muted: #475569;
             
-            --red-loss: #EF4444;
-            --blue-ecuabet: #3B82F6;
+            --accent-green: #00E599;
+            --accent-green-glow: rgba(0, 229, 153, 0.2);
+            --accent-cyan: #00D2FF;
+            --accent-cyan-glow: rgba(0, 210, 255, 0.2);
+            --accent-gold: #FFB800;
+            --accent-gold-glow: rgba(255, 184, 0, 0.2);
+            --accent-red: #FF3B30;
+            --accent-red-glow: rgba(255, 59, 48, 0.2);
+            --accent-purple: #A855F7;
+            
+            --bottom-nav-h: 68px;
+            --header-h: 60px;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-deep);
-            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-void);
+            color: var(--text-primary);
             min-height: 100vh;
-            padding: 2rem 1rem;
+            padding-bottom: calc(var(--bottom-nav-h) + 24px);
+            overflow-x: hidden;
+            letter-spacing: -0.01em;
         }
 
-        h1, h2, h3, h4, h5, .font-title {
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            letter-spacing: -0.02em;
+        h1, h2, h3, h4, .font-heading {
+            font-family: 'Outfit', sans-serif;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* Top Brand Header */
-        header {
+        /* ── HEADER SUPERIOR ── */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            height: var(--header-h);
+            background: rgba(11, 14, 20, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-subtle);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border-card);
-            padding-bottom: 1rem;
+            padding: 0 16px;
+        }
+
+        .brand-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .brand-logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .logo-box {
-            background: var(--accent-primary-dim);
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            color: #05070B;
+            font-size: 18px;
+            box-shadow: 0 0 16px var(--accent-green-glow);
+        }
+
+        .brand-title {
+            font-size: 15px;
             font-weight: 800;
-            font-size: 1.4rem;
-            color: var(--accent-primary);
-        }
-
-        .brand-name {
-            font-size: 1.6rem;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            color: var(--text-main);
-        }
-
-        .brand-version {
-            background: rgba(0, 200, 150, 0.12);
-            border: 1px solid rgba(0, 200, 150, 0.3);
-            border-radius: 6px;
-            padding: 0.2rem 0.6rem;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--accent-primary);
-        }
-
-        .tagline {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            text-align: right;
+            letter-spacing: 0.04em;
+            color: var(--text-primary);
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            gap: 6px;
         }
 
-        .tagline span {
-            color: var(--accent-cyan);
+        .brand-tag {
+            font-size: 9px;
+            padding: 2px 6px;
+            background: rgba(0, 229, 153, 0.12);
+            color: var(--accent-green);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            border-radius: 4px;
             font-weight: 700;
+            text-transform: uppercase;
         }
 
-        /* Flat Minimalist Base Cards */
-        .glass-card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-card);
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 1.5rem;
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .live-dot {
+            width: 7px;
+            height: 7px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-green);
+            animation: pulse-dot 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        /* ── SECCIÓN CARRUSEL SUPERIOR (PARTIDOS DESTACADOS) ── */
+        .featured-section {
+            padding: 16px 0 8px 0;
+            overflow: hidden;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px 10px 16px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .featured-carousel {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            padding: 4px 16px 12px 16px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .featured-carousel::-webkit-scrollbar {
+            display: none;
+        }
+
+        .featured-card {
+            flex: 0 0 280px;
+            scroll-snap-align: start;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             overflow: hidden;
         }
 
-        /* Tabs Navigation Bar (Bet365 design) */
-        .tabs-header {
+        .featured-card:hover, .featured-card:active {
+            border-color: var(--border-neon);
+            transform: translateY(-2px);
+            background: var(--bg-card-hover);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .featured-card.active-match {
+            border-color: var(--accent-green);
+            background: rgba(0, 229, 153, 0.04);
+            box-shadow: 0 0 20px rgba(0, 229, 153, 0.15);
+        }
+
+        .card-top {
             display: flex;
-            border-bottom: 1px solid var(--border-card);
-            margin-bottom: 1.5rem;
-            gap: 0.5rem;
-            overflow-x: auto;
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
-        .tabs-header::-webkit-scrollbar {
-            display: none; /* Hide scrollbar for Chrome, Safari and Opera */
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 11px;
         }
 
-        .tab-btn {
-            background: none;
-            border: none;
-            padding: 0.75rem 1.25rem;
-            color: var(--text-muted);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.95rem;
+        .league-chip {
+            color: var(--text-secondary);
             font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            position: relative;
-            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 8px;
+            border-radius: 6px;
         }
 
-        .tab-btn:hover {
-            color: var(--text-main);
+        .match-badge-live {
+            color: var(--accent-red);
+            background: rgba(255, 59, 48, 0.15);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
-        .tab-btn.active {
-            color: var(--accent-primary);
+        .match-badge-time {
+            color: var(--accent-cyan);
+            font-weight: 600;
         }
 
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: var(--accent-primary);
+        .card-teams {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
         }
 
-        .tab-content {
+        .team-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .team-score {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 16px;
+            color: var(--accent-green);
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-subtle);
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .lineups-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        /* ── SELECTOR DE LIGAS (CHIPS TÁCTILES) ── */
+        .leagues-bar {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 0 16px 16px 16px;
+            scrollbar-width: none;
+        }
+
+        .leagues-bar::-webkit-scrollbar {
             display: none;
         }
 
-        .tab-content.active {
+        .league-btn {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s ease;
+        }
+
+        .league-btn.active, .league-btn:hover {
+            background: var(--bg-card-active);
+            color: var(--text-primary);
+            border-color: var(--accent-green);
+        }
+
+        /* ── CONTENEDOR PRINCIPAL ── */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        /* ── CAJA DE BÚSQUEDA Y CONTROL ── */
+        .search-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 20px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .inputs-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .input-box {
+            position: relative;
+        }
+
+        .input-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 4px;
             display: block;
         }
 
-        /* Form Layout */
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr auto;
-            gap: 1.25rem;
-            align-items: end;
-        }
-
-        @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            .glass-card {
-                padding: 1.25rem 1rem;
-            }
-            .match-header-widget {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-            .vs-circle {
-                margin: 0.5rem auto;
-            }
-            .team-display h3 {
-                font-size: 1.25rem;
-            }
-            header {
-                flex-direction: column;
-                gap: 0.75rem;
-                text-align: center;
-            }
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .input-group label {
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-        }
-
-        .input-group input {
-            background: var(--bg-deep);
-            border: 1px solid var(--border-card);
-            padding: 0.9rem 1.1rem;
-            border-radius: 8px;
-            color: var(--text-main);
-            font-size: 0.95rem;
-            font-weight: 500;
-            outline: none;
-            transition: all 0.2s ease;
-        }
-
-        .input-group input:focus {
-            border-color: var(--accent-primary);
-        }
-
-        .btn-analyze {
-            background: transparent;
-            border: 1px solid var(--accent-primary);
-            padding: 0.9rem 2.2rem;
-            border-radius: 8px;
-            color: var(--accent-primary);
-            font-size: 1rem;
+        .team-input {
+            width: 100%;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 15px;
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            height: 52px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .team-input:focus {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px var(--accent-green-glow);
+        }
+
+        .swap-btn {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.6rem;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: transform 0.2s;
         }
 
-        .btn-analyze:hover {
-            background: var(--accent-primary-dim);
+        .swap-btn:hover {
+            transform: rotate(180deg);
+            color: var(--accent-green);
+        }
+
+        .controls-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .toggle-neutral {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .toggle-neutral input {
+            accent-color: var(--accent-green);
+            width: 16px;
+            height: 16px;
+        }
+
+        .btn-analyze {
+            flex: 1;
+            max-width: 280px;
+            background: linear-gradient(135deg, var(--accent-green), #00B87A);
+            color: #05070B;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 14px;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            box-shadow: 0 4px 20px var(--accent-green-glow);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .btn-analyze:active {
             transform: scale(0.98);
         }
 
-        /* Chat Chips */
-        .chat-chip {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-card);
-            border-radius: 20px;
-            padding: 0.35rem 0.85rem;
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .chat-chip:hover {
-            border-color: var(--accent-cyan);
-            color: var(--accent-cyan);
-            background: rgba(34, 211, 238, 0.08);
+        .btn-analyze:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
-        .swap-btn {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-card);
-            border-radius: 8px;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--accent-cyan);
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 4px;
-        }
-        .swap-btn:hover {
-            background: rgba(34, 211, 238, 0.12);
-            border-color: var(--accent-cyan);
-            transform: rotate(180deg);
-        }
-
-        /* Stepper */
-        .stepper {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 0.9rem;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.02);
-        }
-
-        .step-item {
-            flex: 1;
-            text-align: center;
-            position: relative;
-        }
-
-        .step-circle {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.03);
-            border: 2px solid var(--border-card);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 0.4rem;
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            transition: all 0.3s ease;
-        }
-
-        .step-item.active .step-circle {
-            background: var(--accent-primary-dim);
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
-        }
-
-        .step-item.completed .step-circle {
-            background: var(--accent-primary);
-            border-color: var(--accent-primary);
-            color: var(--bg-deep);
-        }
-
-        .step-label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .step-item.active .step-label { color: var(--text-main); }
-        .step-item.completed .step-label { color: var(--accent-primary); }
-
-        /* Console Logs */
-        .console-container {
-            background: var(--bg-deep);
-            border: 1px solid var(--border-card);
-            border-radius: 8px;
-            font-family: 'Consolas', 'Courier New', monospace;
-            padding: 1.25rem;
-            margin-bottom: 1.5rem;
-            height: 160px;
-            overflow-y: auto;
-        }
-
-        .console-line {
-            font-size: 0.85rem;
-            margin-bottom: 0.35rem;
-            color: var(--text-muted);
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .console-line.success { color: var(--accent-primary); }
-        .console-line.info { color: var(--text-main); }
-        .console-line.error { color: var(--red-loss); }
-
-        /* Grid simulations */
-        .simulation-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .sim-card {
-            background: rgba(255, 255, 255, 0.01);
-            border: 1px solid var(--border-card);
-            border-radius: 8px;
-            padding: 0.75rem 0.5rem;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .sim-card.done {
-            border-color: var(--accent-primary);
-            background: var(--accent-primary-dim);
-        }
-
-        .sim-card h4 {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            margin-bottom: 0.3rem;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            overflow: hidden;
-            font-weight: 500;
-        }
-
-        .sim-score {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--accent-primary);
-        }
-
-        /* Widgets visual dashboard */
-        .sharp-pick-banner {
-            border: 1px solid var(--accent-primary);
-            background: var(--accent-primary-dim);
-            display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-            padding: 1.5rem;
-        }
-
-        .pick-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .pick-badge {
-            background: var(--accent-primary);
-            border-radius: 4px;
-            padding: 0.25rem 0.6rem;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--bg-deep);
-            letter-spacing: 0.05em;
-        }
-
-        .pick-value {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .pick-stake-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid var(--border-card);
-            padding-top: 1rem;
-        }
-
-        .stake-info h5 {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            font-weight: 600;
-            letter-spacing: 0.03em;
-        }
-
-        .stake-amount {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: var(--accent-primary);
-        }
-
-        .match-header-widget {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            text-align: center;
-        }
-
-        .team-display {
-            flex: 1;
-        }
-
-        .team-display h3 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .vs-circle {
-            background: var(--bg-deep);
-            border: 1px solid var(--border-card);
-            border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin: 0 1.5rem;
-        }
-
-        /* Grid */
-        .env-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        @media (max-width: 768px) {
-            .env-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .env-card {
-            background: rgba(255, 255, 255, 0.01);
-            border: 1px solid var(--border-card);
-            border-radius: 12px;
-            padding: 1.25rem;
-        }
-
-        .env-card-title {
-            font-family: 'Inter', sans-serif;
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-main);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 0.02em;
-        }
-
-        .env-card-title svg {
-            width: 18px;
-            height: 18px;
-            fill: var(--accent-blue);
-        }
-
-        .env-item {
-            font-size: 0.9rem;
-            margin-bottom: 0.6rem;
-            color: var(--text-muted);
-        }
-
-        .env-item strong {
-            color: #fff;
-        }
-
-        .referee-badge-heavy {
-            background: var(--red-loss);
-            border-radius: 4px;
-            padding: 0.1rem 0.4rem;
-            font-size: 0.65rem;
-            font-weight: 800;
-            color: #fff;
-            margin-left: 0.4rem;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
-        }
-
-        /* 1X2 */
-        .bar-1x2-title {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            margin-bottom: 0.75rem;
-            letter-spacing: 0.03em;
-        }
-
-        .stacked-bar-container {
-            display: flex;
-            height: 32px;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 1.5rem;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: 0.9rem;
-            border: 1px solid var(--border-card);
-        }
-
-        .bar-segment {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            padding: 0 0.5rem;
-        }
-
-        .segment-local { background: var(--accent-cyan); color: #000; text-shadow: none; font-weight: 800; }
-        .segment-draw { background: #334155; }
-        .segment-visitor { background: var(--accent-blue); }
-
-        .odds-1x2-table {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 1rem;
-        }
-
-        .odds-cell {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--border-card);
-            border-radius: 8px;
-            padding: 0.85rem;
-        }
-
-        .odds-cell-label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 0.25rem;
-        }
-
-        .odds-cell-prob {
-            font-size: 1.15rem;
-            font-weight: 800;
-            color: #fff;
-        }
-
-        .odds-cell-values {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 0.25rem;
-            line-height: 1.4;
-        }
-
-        .odds-cell-values span.fair { color: var(--accent-cyan); font-weight: 700; }
-        .odds-cell-values span.market { color: var(--accent-yellow); font-weight: 700; }
-
-        /* Over/Under Progress */
-        .markets-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        @media (max-width: 992px) {
-            .markets-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .market-progress-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.85rem;
-        }
-
-        .progress-label-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-
-        .progress-label-row strong {
-            color: #fff;
-        }
-
-        .bar-progress-container {
-            height: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 5px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .bar-progress-fill {
-            height: 100%;
-            border-radius: 5px;
-            width: 0%;
-            transition: width 0.6s ease-in-out;
-        }
-
-        .fill-orange { background: var(--accent-blue); }
-        .fill-green { background: var(--accent-cyan); }
-        .fill-yellow { background: #60a5fa; }
-
-        /* Handicap Box */
-        .handicap-container {
-            background: rgba(255, 255, 255, 0.015);
-            border: 1px solid var(--border-card);
-            border-radius: 10px;
-            padding: 1.25rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .handicap-info h4 {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 0.2rem;
-        }
-
-        .handicap-val {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: var(--accent-yellow);
-        }
-
-        /* Tactics */
-        .tactics-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.25rem;
-            margin-bottom: 1.25rem;
-        }
-
-        @media (max-width: 768px) {
-            .tactics-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .tactics-team-card {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border-card);
-            border-radius: 8px;
-            padding: 1rem;
-        }
-
-        .tactics-team-name {
-            font-size: 1.05rem;
-            font-weight: 800;
-            color: #fff;
-            margin-bottom: 0.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            padding-bottom: 0.4rem;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .tactics-formation-badge {
-            background: var(--blue-ecuabet);
-            border-radius: 4px;
-            padding: 0.1rem 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        /* Warnings */
-        .warning-banner {
-            background: rgba(255, 200, 0, 0.05);
-            border: 1px solid rgba(255, 200, 0, 0.3);
-            color: #FBBF24;
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            margin-bottom: 1.25rem;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 500;
-        }
-
-        /* ==========================================================================
-           ROM LUDOPATA 1.1 NEW FEATURES CSS
-           ========================================================================== */
-
-        /* 1. FUT-style player cards */
-        .player-cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 1.25rem;
-            margin-top: 1rem;
-        }
-
-        .fut-card {
+        /* ── PROGRESS OVERLAY ── */
+        .progress-box {
+            display: none;
             background: var(--bg-card);
-            border: 1px solid var(--border-card);
-            border-radius: 8px;
-            padding: 0.85rem;
+            border: 1px solid var(--border-neon);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
             text-align: center;
-            position: relative;
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            transition: all 0.2s ease;
         }
 
-        .fut-card:hover {
-            border-color: var(--accent-primary);
-        }
-
-        .fut-rating-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            border-bottom: 1px solid rgba(255,255,255,0.15);
-            padding-bottom: 0.4rem;
-            margin-bottom: 0.4rem;
-        }
-
-        .fut-rating {
-            font-size: 1.8rem;
-            font-weight: 900;
-            line-height: 1;
-            color: #fff;
-        }
-
-        .fut-pos {
-            font-size: 0.75rem;
-            font-weight: 800;
-            background: rgba(0, 0, 0, 0.25);
-            padding: 0.1rem 0.4rem;
-            border-radius: 3px;
-        }
-
-        .fut-name {
-            font-size: 0.95rem;
-            font-weight: 800;
-            margin: 0.5rem 0;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            overflow: hidden;
-            letter-spacing: -0.01em;
-        }
-
-        .fut-stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.35rem;
-            font-size: 0.75rem;
-            background: rgba(0,0,0,0.15);
-            padding: 0.4rem;
-            border-radius: 6px;
+        .progress-step-title {
+            font-size: 15px;
             font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
         }
 
-        .fut-stat-val {
-            color: var(--accent-cyan);
+        .progress-step-msg {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
         }
 
-        /* 2. Sliders custom design */
-        input[type=range] {
-            -webkit-appearance: none;
-            background: transparent;
+        .progress-bar-bg {
+            height: 4px;
+            background: var(--bg-surface);
+            border-radius: 2px;
+            overflow: hidden;
         }
 
-        input[type=range]:focus {
-            outline: none;
+        .progress-bar-fill {
+            height: 100%;
+            width: 30%;
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
+            transition: width 0.3s ease;
         }
 
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 6px;
-            cursor: pointer;
-            background: rgba(255,255,255,0.08);
-            border-radius: 3px;
-            border: 1px solid rgba(255,255,255,0.02);
+        /* ── LAS 4 CÁPSULAS DE PRONÓSTICO INTELIGENTE 2026 ── */
+        .capsules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
         }
 
-        input[type=range]::-webkit-slider-thumb {
-            height: 16px;
-            width: 16px;
-            border-radius: 50%;
-            background: var(--accent-cyan);
-            cursor: pointer;
-            -webkit-appearance: none;
-            margin-top: -5px;
-            box-shadow: 0 0 8px var(--accent-cyan-glow);
-            transition: transform 0.1s ease;
-        }
-
-        input[type=range]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-
-        /* 3. Visual Timeline for chronicle */
-        .timeline-container {
+        .capsule-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 18px;
             position: relative;
-            border-left: 2px dashed rgba(255, 255, 255, 0.08);
-            margin-left: 1rem;
-            padding-left: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-            margin-top: 1rem;
+            overflow: hidden;
+            transition: transform 0.2s ease, border-color 0.2s ease;
         }
 
-        .timeline-item {
-            position: relative;
-            background: rgba(255, 255, 255, 0.015);
-            border: 1px solid var(--border-card);
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
+        .capsule-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-bright);
         }
 
-        .timeline-badge {
+        .capsule-card::before {
+            content: '';
             position: absolute;
-            left: -2.35rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background: var(--accent-blue);
-            color: #fff;
-            border-radius: 50%;
-            width: 26px;
-            height: 26px;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-green);
+        }
+
+        .capsule-card.card-warning::before {
+            background: var(--accent-gold);
+        }
+
+        .capsule-card.card-danger::before {
+            background: var(--accent-red);
+        }
+
+        .capsule-card.card-cyan::before {
+            background: var(--accent-cyan);
+        }
+
+        .capsule-header {
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .capsule-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .capsule-metric {
+            font-family: 'Outfit', sans-serif;
             font-weight: 800;
-            border: 2px solid var(--bg-deep);
-            box-shadow: 0 0 5px var(--accent-blue-glow);
+            font-size: 13px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-primary);
         }
 
-        .timeline-item.goal {
-            border-color: var(--accent-cyan);
-            background: rgba(0, 240, 255, 0.02);
-        }
-        .timeline-item.goal .timeline-badge {
-            background: var(--accent-cyan);
-            color: #000;
-            box-shadow: 0 0 5px var(--accent-cyan-glow);
-        }
-
-        .timeline-item.booking-yellow {
-            border-color: var(--accent-yellow);
-            background: rgba(255, 200, 0, 0.02);
-        }
-        .timeline-item.booking-yellow .timeline-badge {
-            background: var(--accent-yellow);
-            color: #000;
-            box-shadow: 0 0 5px var(--accent-yellow-glow);
+        .capsule-pick {
+            font-family: 'Outfit', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            line-height: 1.25;
         }
 
-        .timeline-item.booking-red {
-            border-color: var(--red-loss);
-            background: rgba(239, 68, 68, 0.02);
-        }
-        .timeline-item.booking-red .timeline-badge {
-            background: var(--red-loss);
-            color: #fff;
+        .capsule-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
         }
 
-        /* Utilities */
-        .hidden { display: none !important; }
-        .spinner {
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top: 3px solid #fff;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
+        .capsule-ev-badge {
             display: inline-block;
+            margin-top: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+
+        .ev-positive {
+            background: rgba(0, 229, 153, 0.15);
+            color: var(--accent-green);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+        }
+
+        .ev-neutral {
+            background: rgba(255, 184, 0, 0.15);
+            color: var(--accent-gold);
+            border: 1px solid rgba(255, 184, 0, 0.3);
+        }
+
+        /* ── SECCIÓN PRE-PARTIDO: ÁRBITRO, ESTADIO, ALINEACIONES ── */
+        .prematch-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .detail-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 16px;
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 8px;
+        }
+
+        .detail-header-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .detail-content {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .detail-highlight {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* ── ALINEACIONES EN CANCHA / TABLA ── */
+        .lineups-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .lineup-col-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent-green);
+            margin-bottom: 6px;
+        }
+
+        .player-chip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-surface);
+            padding: 4px 8px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .player-pos {
+            font-size: 9px;
+            font-weight: 700;
+            padding: 1px 4px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+        }
+
+        /* ── TABS NAVEGACIÓN RESULTADOS ── */
+        .results-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 10px;
+        }
+
+        .result-tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            padding: 8px 14px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.15s ease;
+        }
+
+        .result-tab-btn.active {
+            background: var(--bg-card-active);
+            color: var(--accent-green);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* ── ESCENARIOS ESTOCÁSTICOS ── */
+        .scenarios-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .scenario-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .scenario-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .scenario-score {
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--accent-green);
+            background: var(--bg-surface);
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+
+        /* ── REPORTE MARKDOWN ── */
+        .markdown-body {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 20px;
+            line-height: 1.7;
+            font-size: 14px;
+            color: #CBD5E1;
+        }
+
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+            color: var(--text-primary);
+            margin: 16px 0 8px 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .markdown-body ul {
+            padding-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        .markdown-body strong {
+            color: var(--accent-green);
+        }
+
+        /* ── BOTTOM NAVIGATION (MÓVIL / APK / PWA) ── */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--bottom-nav-h);
+            background: rgba(11, 14, 20, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 8px 16px;
+            transition: color 0.15s ease;
+        }
+
+        .nav-item.active {
+            color: var(--accent-green);
+        }
+
+        .nav-icon {
+            font-size: 18px;
+        }
+
+        @media (max-width: 600px) {
+            .inputs-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .swap-btn {
+                display: none;
+            }
+            .controls-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-analyze {
+                max-width: 100%;
+            }
+            .featured-card {
+                flex: 0 0 82vw;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Brand Header Bar -->
-        <header>
-            <div class="brand-logo">
-                <div class="logo-box">R</div>
-                <div>
-                    <div class="brand-name">ROM LUDOPATA <span class="brand-version">1.2 (SBIE v2.0)</span></div>
-                </div>
-            </div>
-            <div class="tagline">
-                ANÁLISIS PROBABILÍSTICO <span>SBIE v2.0 QUANT ENGINE</span>
-            </div>
-        </header>
 
-        <!-- Navegación Superior Global (Tabs Principales) -->
-        <div class="tabs-header" style="margin-bottom: 2rem;">
-            <button class="tab-btn active" id="nav-btn-analyzer" onclick="switchMainTab('tab-analyzer-view')">ANALIZADOR DE PARTIDOS</button>
-            <button class="tab-btn" id="nav-btn-chat" onclick="switchMainTab('tab-chat-view')">CHAT DE BÚSQUEDA</button>
+    <!-- HEADER SUPERIOR -->
+    <header class="app-header">
+        <div class="brand-badge">
+            <div class="brand-logo">R</div>
+            <div class="brand-title">
+                ROM SPORT
+                <span class="brand-tag">v2.0 Pro</span>
+            </div>
         </div>
+        <div class="header-status">
+            <div class="live-dot"></div>
+            <span>ESPN Live API</span>
+        </div>
+    </header>
 
-        <!-- SECCIÓN 1: ANALIZADOR EN VIVO -->
-        <div id="tab-analyzer-view" class="tab-content active">
-            <!-- Formulario Principal -->
-            <div class="glass-card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
-                <form id="analyze-form" class="form-grid">
-                    <div class="input-group">
-                        <label for="local-input">Equipo Local</label>
-                        <input type="text" id="local-input" placeholder="Ej. Real Madrid" required value="Real Madrid">
-                    </div>
-                    <button type="button" class="swap-btn" onclick="swapTeams()" title="Invertir Local / Visitante">⇅</button>
-                    <div class="input-group">
-                        <label for="visitor-input">Equipo Visitante</label>
-                        <input type="text" id="visitor-input" placeholder="Ej. Barcelona" required value="Barcelona">
-                    </div>
-                    <button type="submit" id="btn-submit" class="btn-analyze">
-                        <span id="btn-text">Iniciar Análisis SBIE</span>
-                        <span id="btn-spinner" class="spinner hidden"></span>
-                    </button>
-                    <!-- Checkbox Cancha Neutral -->
-                    <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-start;">
-                        <input type="checkbox" id="neutral-checkbox" style="width: auto; cursor: pointer; accent-color: var(--accent-cyan); height: 18px; width: 18px;">
-                        <label for="neutral-checkbox" style="cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin: 0; user-select: none;">
-                            ⚽ Cancha Neutral / Sin ventaja de localía (Ej. Copa del Mundo, Eurocopa, Amistoso Internacional)
-                        </label>
-                    </div>
-                </form>
+    <!-- BANNER / CARRUSEL DE PARTIDOS DESTACADOS DE HOY (3 a 5 PARTIDOS TOP) -->
+    <section class="featured-section">
+        <div class="section-header">
+            <div class="section-title">
+                <span>🔥</span> Partidos Destacados de Hoy
             </div>
-
-            <!-- Panel de Carga y Progreso -->
-            <div id="progress-panel" class="glass-card hidden">
-                <h3 style="margin-bottom: 1.25rem; font-weight: 700;">PROCESANDO ANÁLISIS CUANTITATIVO</h3>
-                <!-- Stepper -->
-                <div class="stepper">
-                    <div class="step-item" id="step-1"><div class="step-circle">1</div><div class="step-label">Ingesta</div></div>
-                    <div class="step-item" id="step-2"><div class="step-circle">2</div><div class="step-label">Táctica</div></div>
-                    <div class="step-item" id="step-3"><div class="step-circle">3</div><div class="step-label">Simulaciones</div></div>
-                    <div class="step-item" id="step-4"><div class="step-circle">4</div><div class="step-label">Mercado</div></div>
-                    <div class="step-item" id="step-5"><div class="step-circle">5</div><div class="step-label">Reporte</div></div>
+            <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Desliza para elegir</span>
+        </div>
+        <div class="featured-carousel" id="featured-carousel">
+            <!-- Cargado dinámicamente vía /api/matches/featured -->
+            <div class="featured-card">
+                <div class="card-top">
+                    <span class="league-chip">Conectando...</span>
                 </div>
-                <!-- Terminal output -->
-                <div class="console-container" id="console-log">
-                    <div class="console-line info">&gt; Preparando el motor estadístico...</div>
-                </div>
-                <!-- Real-time grid of simulations -->
-                <h4 style="margin-bottom: 0.8rem; font-weight: 700; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Simulaciones Auditadas en Vivo</h4>
-                <div class="simulation-grid" id="sim-grid">
-                    <div class="sim-card" id="sim-card-1"><h4>Sim 1: Estándar</h4><div class="sim-score">-</div></div>
-                    <div class="sim-card" id="sim-card-2"><h4>Sim 2: Clima</h4><div class="sim-score">-</div></div>
-                    <div class="sim-card" id="sim-card-3"><h4>Sim 3: Árbitro</h4><div class="sim-score">-</div></div>
-                    <div class="sim-card" id="sim-card-4"><h4>Sim 4: Lesión</h4><div class="sim-score">-</div></div>
-                    <div class="sim-card" id="sim-card-5"><h4>Sim 5: Gol temprano</h4><div class="sim-score">-</div></div>
-                    <div class="sim-card" id="sim-card-6"><h4>Sim 6: Roja directa</h4><div class="sim-score">-</div></div>
-                    <div class="sim-card" id="sim-card-7"><h4>Sim 7: Presión</h4><div class="sim-score">-</div></div>
-                    <div class="sim-card" id="sim-card-8"><h4>Sim 8: Rumores</h4><div class="sim-score">-</div></div>
-                    <div class="sim-card" id="sim-card-9"><h4>Sim 9: Contra letal</h4><div class="sim-score">-</div></div>
-                    <div class="sim-card" id="sim-card-10"><h4>Sim 10: Tensión</h4><div class="sim-score">-</div></div>
-                </div>
-            </div>
-
-            <!-- Panel de Resultados -->
-            <div id="results-panel" class="glass-card hidden">
-                <div class="tabs-header">
-                    <button class="tab-btn active" onclick="switchResultTab('tab-dashboard', this)">DASHBOARD VISUAL</button>
-                    <button class="tab-btn" onclick="switchResultTab('tab-report', this)">INFORME REDACTADO</button>
-                    <button class="tab-btn" onclick="switchResultTab('tab-simulations', this)">10 SIMULACIONES</button>
-                </div>
-
-                <!-- CONTENIDO PESTAÑA 1: DASHBOARD VISUAL PREMIUM -->
-                <div id="tab-dashboard" class="tab-content active">
-                    <!-- Pick Recomendado (Faja Superior) -->
-                    <div class="glass-card sharp-pick-banner" style="box-shadow: 0 0 25px rgba(0, 200, 150, 0.12);">
-                        <div class="pick-header">
-                            <span class="pick-badge">RECOMENDACIÓN SBIE v2.0 (PICK DE VALOR)</span>
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <button type="button" class="btn-analyze" style="height: 32px; padding: 0 0.85rem; font-size: 0.75rem; background: rgba(0, 200, 150, 0.15); border-color: var(--accent-primary); color: var(--accent-primary);" onclick="copyPickToClipboard()">
-                                    📋 Copiar Pick
-                                </button>
-                                <div id="dashboard-pick-roi" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-yellow);">VALOR DETECTADO</div>
-                            </div>
-                        </div>
-                        <div class="pick-value" id="dashboard-pick-text">Cargando recomendación...</div>
-                        <div class="pick-stake-container">
-                            <div class="stake-info">
-                                <h5>GESTIÓN DE BANCA (KELLY CRITERION)</h5>
-                                <div style="font-size: 0.85rem; color: #fff; margin-top: 0.15rem;" id="dashboard-pick-desc">Tamaño de apuesta sugerido sobre tu bankroll</div>
-                            </div>
-                            <div class="stake-amount" id="dashboard-pick-stake">N/A</div>
-                        </div>
-                    </div>
-
-                    <!-- Sliders Simulador What-If (NUEVO ROM 1.1) -->
-                    <div class="glass-card" style="background: radial-gradient(circle at 100% 100%, rgba(0, 240, 255, 0.04) 0%, transparent 60%), #0b1329; border-color: var(--accent-cyan); padding: 1.25rem;">
-                        <h3 style="margin-bottom: 0.4rem; font-size: 1.1rem; color: var(--accent-cyan); text-transform: uppercase;">
-                            Simulador Interactivo "What-If" (Ajustes de Modelo en Vivo)
-                        </h3>
-                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem;">
-                            Arrastra los controles para modelar el impacto en vivo de factores ambientales, rigurosidad arbitral o localía nula. Las probabilidades de Poisson se recalcularán al instante en los widgets inferiores.
-                        </p>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;" id="whatif-sliders-grid">
-                            <!-- Localia -->
-                            <div class="input-group">
-                                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">
-                                    <span>VENTAJA DE LOCALÍA</span>
-                                    <span id="slider-localia-val" style="color: var(--accent-cyan);">1.0x (Estándar)</span>
-                                </div>
-                                <input type="range" id="slider-localia" min="0" max="2" step="0.1" value="1" oninput="recalculateWhatIf()">
-                            </div>
-                            <!-- Clima -->
-                            <div class="input-group">
-                                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">
-                                    <span>SEVERIDAD DEL CLIMA</span>
-                                    <span id="slider-clima-val" style="color: var(--accent-cyan);">1.0x (Normal)</span>
-                                </div>
-                                <input type="range" id="slider-clima" min="0.5" max="1.5" step="0.1" value="1" oninput="recalculateWhatIf()">
-                            </div>
-                            <!-- Arbitro -->
-                            <div class="input-group">
-                                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">
-                                    <span>RIGUROSIDAD ÁRBITRO</span>
-                                    <span id="slider-arbitro-val" style="color: var(--accent-cyan);">1.0x (Normal)</span>
-                                </div>
-                                <input type="range" id="slider-arbitro" min="0.5" max="2" step="0.1" value="1" oninput="recalculateWhatIf()">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Match Display Widget -->
-                    <div class="glass-card" style="background: rgba(0,0,0,0.15); border-color: rgba(255,255,255,0.02); padding: 1.25rem;">
-                        <div id="match-status-warning" class="warning-banner hidden"></div>
-                        <div class="match-header-widget">
-                            <div class="team-display"><h3 id="dashboard-local-name">Local</h3></div>
-                            <div class="vs-circle">VS</div>
-                            <div class="team-display"><h3 id="dashboard-visitor-name">Visitante</h3></div>
-                        </div>
-                    </div>
-
-                    <!-- Environment Details Grid -->
-                    <div class="env-grid">
-                        <div class="env-card">
-                            <div class="env-card-title">
-                                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-                                Estadio y Condiciones Climáticas
-                            </div>
-                            <div class="env-item">Estadio: <strong id="env-stadium-name">Desconocido</strong></div>
-                            <div class="env-item">Capacidad: <strong id="env-stadium-capacity">N/A</strong></div>
-                            <div class="env-item">Césped: <strong id="env-stadium-grass">Natural</strong></div>
-                            <div class="env-item">Pronóstico Clima: <strong id="env-weather">Cargando...</strong></div>
-                            <div class="env-item" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
-                                Impacto Localía: <span id="env-stadium-impact" style="color: #d1d5db;">Cargando...</span>
-                            </div>
-                        </div>
-
-                        <div class="env-card">
-                            <div class="env-card-title">
-                                <svg viewBox="0 0 24 24"><path d="M17.1 2H6.9C5.3 2 4 3.3 4 4.9V13c0 4.4 3.6 8 8 8s8-3.6 8-8V4.9c0-1.6-1.3-2.9-2.9-2.9zM10 7h4v2h-4V7zm2 12c-3.3 0-6-2.7-6-6v-2h12v2c0 3.3-2.7 6-6 6z"/></svg>
-                                Historial y Rigurosidad del Árbitro
-                            </div>
-                            <div class="env-item">Designado: <strong id="env-ref-name">Desconocido</strong> <span id="env-ref-badge" class="referee-badge-heavy hidden">TARJETERO</span></div>
-                            <div class="env-item">Promedio de Tarjetas: <strong id="env-ref-cards">N/A</strong></div>
-                            <div class="env-item">Estilo de Arbitraje: <strong id="env-ref-style">Cargando...</strong></div>
-                        </div>
-                    </div>
-
-                    <!-- 1X2 Probabilities Widget -->
-                    <div class="glass-card">
-                        <div class="bar-1x2-title">
-                            <span>PROBABILIDAD 1X2 SIMULADA POR MONTE CARLO</span>
-                            <span id="dashboard-1x2-fav" style="color: var(--accent-cyan);">FAVORITO</span>
-                        </div>
-                        
-                        <div class="stacked-bar-container">
-                            <div id="bar-1x2-local" class="bar-segment segment-local" style="width: 33.3%;">Local</div>
-                            <div id="bar-1x2-draw" class="bar-segment segment-draw" style="width: 33.3%;">Empate</div>
-                            <div id="bar-1x2-visitor" class="bar-segment segment-visitor" style="width: 33.3%;">Visita</div>
-                        </div>
-
-                        <div class="odds-1x2-table">
-                            <div class="odds-cell">
-                                <div class="odds-cell-label" id="lbl-cell-local">Local</div>
-                                <div class="odds-cell-prob" id="val-prob-local">33.3%</div>
-                                <div class="odds-cell-values">
-                                    Cuota Justa: <span class="fair" id="val-fair-local">3.00</span><br>
-                                    Casa (Bet365): <span class="market" id="val-market-local">2.90</span>
-                                </div>
-                            </div>
-                            <div class="odds-cell">
-                                <div class="odds-cell-label">Empate (X)</div>
-                                <div class="odds-cell-prob" id="val-prob-draw">33.3%</div>
-                                <div class="odds-cell-values">
-                                    Cuota Justa: <span class="fair" id="val-fair-draw">3.00</span><br>
-                                    Casa (Bet365): <span class="market" id="val-market-draw">3.30</span>
-                                </div>
-                            </div>
-                            <div class="odds-cell">
-                                <div class="odds-cell-label" id="lbl-cell-visitor">Visitante</div>
-                                <div class="odds-cell-prob" id="val-prob-visitor">33.3%</div>
-                                <div class="odds-cell-values">
-                                    Cuota Justa: <span class="fair" id="val-fair-visitor">3.00</span><br>
-                                    Casa (Bet365): <span class="market" id="val-market-visitor">2.95</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Over/Under y Hándicaps Grid Rediseñado a 3 Columnas Premium -->
-                    <div class="markets-grid">
-                        <!-- Columna 1: Goles y Hándicap -->
-                        <div class="env-card" style="display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;">
-                            <div class="env-card-title">
-                                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-6h2v6zm0-8h-2V8h2v2z"/></svg>
-                                Goles y Hándicap Asiático
-                            </div>
-                            <div class="market-progress-group">
-                                <div>
-                                    <div class="progress-label-row"><span>Más de 1.5 Goles</span><strong id="val-prob-over15">50%</strong></div>
-                                    <div class="bar-progress-container"><div id="bar-fill-over15" class="bar-progress-fill fill-green"></div></div>
-                                </div>
-                                <div>
-                                    <div class="progress-label-row"><span>Más de 2.5 Goles</span><strong id="val-prob-over25">50%</strong></div>
-                                    <div class="bar-progress-container"><div id="bar-fill-over25" class="bar-progress-fill fill-orange"></div></div>
-                                </div>
-                                <div>
-                                    <div class="progress-label-row"><span>Más de 3.5 Goles</span><strong id="val-prob-over35">50%</strong></div>
-                                    <div class="bar-progress-container"><div id="bar-fill-over35" class="bar-progress-fill fill-red"></div></div>
-                                </div>
-                            </div>
-                            <div class="handicap-container" style="margin-top: 0.25rem;">
-                                <div class="handicap-info">
-                                    <h4>Hándicap Asiático</h4>
-                                    <div style="font-size: 0.7rem; color: var(--text-muted);">Cuota Estimada</div>
-                                </div>
-                                <div>
-                                    <span class="handicap-val" id="dashboard-handicap-line">Local -0.5</span>
-                                    <span style="font-size: 0.95rem; color: #fff; margin-left: 0.3rem; font-weight: 700;" id="dashboard-handicap-odds">(1.95)</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Columna 2: Tiros de Esquina (Corners) -->
-                        <div class="env-card" style="display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;">
-                            <div class="env-card-title">
-                                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-                                Tiros de Esquina (Corners)
-                            </div>
-                            <div class="market-progress-group">
-                                <div>
-                                    <div class="progress-label-row"><span>Más de 8.5 Corners</span><strong id="val-prob-over85corners">50%</strong></div>
-                                    <div class="bar-progress-container"><div id="bar-fill-over85corners" class="bar-progress-fill fill-green"></div></div>
-                                </div>
-                                <div>
-                                    <div class="progress-label-row"><span>Más de 9.5 Corners</span><strong id="val-prob-over95corners">50%</strong></div>
-                                    <div class="bar-progress-container"><div id="bar-fill-over95corners" class="bar-progress-fill fill-yellow"></div></div>
-                                </div>
-                                <div>
-                                    <div class="progress-label-row"><span>Más de 10.5 Corners</span><strong id="val-prob-over105corners">50%</strong></div>
-                                    <div class="bar-progress-container"><div id="bar-fill-over105corners" class="bar-progress-fill fill-orange"></div></div>
-                                </div>
-                            </div>
-                            <div style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between;">
-                                <span>Promedio del Partido:</span>
-                                <strong id="val-avg-corners" style="color: #fff;">L: 5.0 | V: 4.5</strong>
-                            </div>
-                        </div>
-
-                        <!-- Columna 3: Disciplina (Tarjetas y Faltas) -->
-                        <div class="env-card" style="display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;">
-                            <div class="env-card-title">
-                                <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
-                                Disciplina (Tarjetas y Faltas)
-                            </div>
-                            <div class="market-progress-group">
-                                <div>
-                                    <div class="progress-label-row"><span>Más de 4.5 Tarjetas</span><strong id="val-prob-over45cards">50%</strong></div>
-                                    <div class="bar-progress-container"><div id="bar-fill-over45cards" class="bar-progress-fill fill-orange"></div></div>
-                                    <div style="font-size: 0.7rem; color: var(--text-muted); text-align: right; margin-top: 0.15rem;" id="val-avg-cards">Promedio: 4.5 amonestaciones</div>
-                                </div>
-                                <div style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 0.5rem;">
-                                    <div class="progress-label-row"><span>Más de 21.5 Faltas</span><strong id="val-prob-over215fouls">50%</strong></div>
-                                    <div class="bar-progress-container"><div id="bar-fill-over215fouls" class="bar-progress-fill fill-yellow"></div></div>
-                                </div>
-                                <div>
-                                    <div class="progress-label-row"><span>Más de 25.5 Faltas</span><strong id="val-prob-over255fouls">50%</strong></div>
-                                    <div class="bar-progress-container"><div id="bar-fill-over255fouls" class="bar-progress-fill fill-orange"></div></div>
-                                </div>
-                                <div>
-                                    <div class="progress-label-row"><span>Más de 29.5 Faltas</span><strong id="val-prob-over295fouls">50%</strong></div>
-                                    <div class="bar-progress-container"><div id="bar-fill-over295fouls" class="bar-progress-fill fill-red"></div></div>
-                                </div>
-                            </div>
-                            <div style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between;">
-                                <span>Total Faltas Esperado:</span>
-                                <strong id="val-avg-fouls" style="color: #fff;">24.0 faltas</strong>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tactical Analysis Details -->
-                    <div class="glass-card">
-                        <h3 id="tactics-header-title" style="margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem; font-size: 1.1rem; color: var(--accent-cyan); text-transform: uppercase;">
-                            Análisis Táctico de Alineaciones
-                        </h3>
-                        <div id="tactics-warning-box" class="warning-banner hidden"></div>
-                        <div class="tactics-grid">
-                            <div class="tactics-team-card">
-                                <div class="tactics-team-name">
-                                    <span id="tactics-local-label">Local</span>
-                                    <span class="tactics-formation-badge" id="tactics-local-form">N/A</span>
-                                </div>
-                                <div style="font-size: 0.85rem; color: #d1d5db;" id="tactics-local-style">Estilo cargando...</div>
-                            </div>
-                            <div class="tactics-team-card">
-                                <div class="tactics-team-name">
-                                    <span id="tactics-visitor-label">Visitante</span>
-                                    <span class="tactics-formation-badge" id="tactics-visitor-form">N/A</span>
-                                </div>
-                                <div style="font-size: 0.85rem; color: #d1d5db;" id="tactics-visitor-style">Estilo cargando...</div>
-                            </div>
-                        </div>
-
-                        <!-- FUT-style Star Players Grid (NUEVO ROM 1.1) -->
-                        <h4 style="margin: 1.5rem 0 0.8rem; font-size: 0.95rem; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 0.03em;">
-                            Jugadores Clave Destacados (FUT Star Ratings)
-                        </h4>
-                        <div class="player-cards-grid" id="star-players-container">
-                            <!-- Injected dynamically in updateVisualDashboard -->
-                        </div>
-
-                        <div style="font-size: 0.9rem; margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem;">
-                            <p style="margin-bottom: 0.5rem;"><strong style="color: #fff;">Interacción y Emparejamiento:</strong> <span id="tactics-matchup" style="color: var(--text-muted);">Cargando...</span></p>
-                            <p style="margin-bottom: 0.5rem;"><strong style="color: #fff;">Zonas Críticas:</strong> <span id="tactics-zones" style="color: var(--text-muted);">Cargando...</span></p>
-                            <p style="margin-bottom: 0.5rem;"><strong style="color: #fff;">Ventaja Táctica:</strong> <span id="tactics-advantage" style="color: var(--accent-green); font-weight: 600;">Cargando...</span></p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- CONTENIDO PESTAÑA 2: INFORME REDACTADO EN ESPAÑOL -->
-                <div id="tab-report" class="tab-content" style="line-height: 1.7; font-size: 1.05rem;"></div>
-
-                <!-- CONTENIDO PESTAÑA 3: 10 SIMULACIONES DETALLADAS (Visual Timeline en ROM 1.1) -->
-                <div id="tab-simulations" class="tab-content">
-                    <div id="simulations-detailed-list" style="display: flex; flex-direction: column; gap: 1.5rem;"></div>
-          <!-- SECCIÓN 2: DASHBOARD DE BACKTESTING REMOVIDO --> </div>
+                <div class="card-teams">
+                    <div class="team-row"><span>Cargando partidos...</span></div>
                 </div>
             </div>
         </div>
+    </section>
 
-        <!-- SECCIÓN 3: CHAT DE BÚSQUEDA PERSONALIZADA -->
-        <div id="tab-chat-view" class="tab-content">
-            <div class="glass-card" style="border-color: var(--accent-primary); display: flex; flex-direction: column; height: 600px;">
-                <div style="border-bottom: 1px solid var(--border-card); padding-bottom: 1rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
-                    <div>
-                        <h2 style="font-weight: 800; font-size: 1.4rem; color: var(--text-main);">
-                            Chat de Búsqueda Personalizada
-                        </h2>
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">
-                            Realiza consultas libres en tiempo real sobre cualquier partido, cuotas, lesionados o estadísticas.
-                        </p>
-                    </div>
-                    <button class="btn-analyze" style="height: 36px; padding: 0 1rem; font-size: 0.8rem; background: rgba(255,255,255,0.02); border-color: var(--border-card);" onclick="clearChat()">Limpiar Chat</button>
-                </div>
-                
-                <!-- Contenedor de Mensajes -->
-                <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 0.5rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 1rem; scroll-behavior: smooth;">
-                    <!-- Mensaje Inicial del Asistente -->
-                    <div class="chat-message assistant" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-card); border-radius: 8px; padding: 1rem; max-width: 85%;">
-                        <div style="font-size: 0.75rem; font-weight: 800; color: var(--accent-primary); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em;">ROM LUDOPATA 1.2</div>
-                        <div style="font-size: 0.95rem; line-height: 1.6;">¡Hola! Soy tu asistente de apuestas deportivas avanzadas. Puedo buscar información en internet en tiempo real. Pregúntame sobre lesionados de hoy, cuotas de valor, análisis de árbitros o pronósticos específicos de cualquier encuentro. ¿En qué te puedo ayudar hoy?</div>
-                    </div>
-                </div>
-
-                <!-- Estado del análisis / búsqueda en vivo -->
-                <div id="chat-status-box" class="hidden" style="background: rgba(0, 200, 150, 0.05); border: 1px solid rgba(0, 200, 150, 0.2); border-radius: 6px; padding: 0.6rem 0.8rem; margin-bottom: 0.8rem; font-size: 0.85rem; color: var(--accent-primary); display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
-                    <span class="spinner" style="border-top-color: var(--accent-primary); width: 14px; height: 14px; border-width: 2px;"></span>
-                    <span id="chat-status-text">Buscando...</span>
-                </div>
-
-                <!-- Quick Suggestion Chips -->
-                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
-                    <button type="button" class="chat-chip" onclick="fillChatPrompt('¿Cuáles son los lesionados y bajas para hoy?')">🏥 Lesionados</button>
-                    <button type="button" class="chat-chip" onclick="fillChatPrompt('¿Cuál es la trayectoria y rigurosidad del árbitro?')">🟨 Árbitro</button>
-                    <button type="button" class="chat-chip" onclick="fillChatPrompt('¿Qué pronóstico hay para la línea de córners?')">🚩 Córners</button>
-                    <button type="button" class="chat-chip" onclick="fillChatPrompt('¿Existe alguna apuesta con Valor Esperado (+EV)?')">💎 Valor +EV</button>
-                </div>
-
-                <!-- Input y Botón de Envío -->
-                <form id="chat-form" style="display: flex; gap: 0.85rem; flex-shrink: 0;" onsubmit="sendChatMessage(event)">
-                    <input type="text" id="chat-input" placeholder="Pregunta algo, ej. ¿Quién llega como favorito para el partido de España hoy y cuáles son sus bajas?" style="flex: 1; background: var(--bg-deep); border: 1px solid var(--border-card); padding: 0.9rem 1.1rem; border-radius: 8px; color: var(--text-main); font-size: 0.95rem; outline: none;" required autocomplete="off">
-                    <button type="submit" class="btn-analyze" style="background: var(--accent-primary); color: var(--bg-deep); border: none; font-weight: 800; height: 52px; display: flex; align-items: center; justify-content: center;">
-                        <span>Enviar</span>
-                    </button>
-                </form>
-            </div>
-        </div>
+    <!-- CHIPS DE LIGAS PRINCIPALES Y COMPETITIVAS -->
+    <div class="leagues-bar" id="leagues-bar">
+        <button class="league-btn active" data-league="ita.1">🇮🇹 Serie A</button>
+        <button class="league-btn" data-league="eng.1">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier</button>
+        <button class="league-btn" data-league="esp.1">🇪🇸 LaLiga</button>
+        <button class="league-btn" data-league="uefa.champions">🏆 Champions</button>
+        <button class="league-btn" data-league="ger.1">🇩🇪 Bundesliga</button>
+        <button class="league-btn" data-league="fra.1">🇫🇷 Ligue 1</button>
+        <button class="league-btn" data-league="eng.2">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Championship</button>
+        <button class="league-btn" data-league="ned.1">🇳🇱 Eredivisie</button>
+        <button class="league-btn" data-league="por.1">🇵🇹 Primeira Liga</button>
+        <button class="league-btn" data-league="ksa.1">🇸🇦 Saudi Pro</button>
+        <button class="league-btn" data-league="usa.1">🇺🇸 MLS</button>
+        <button class="league-btn" data-league="mex.1">🇲🇽 Liga MX</button>
+        <button class="league-btn" data-league="bra.1">🇧🇷 Brasileirão</button>
+        <button class="league-btn" data-league="arg.1">🇦🇷 Liga Arg</button>
+        <button class="league-btn" data-league="uefa.europa">🇪🇺 Europa League</button>
+        <button class="league-btn" data-league="conmebol.libertadores">🌎 Libertadores</button>
     </div>
 
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="container">
+        
+        <!-- CAJA DE ANÁLISIS Y ENTRADA -->
+        <section class="search-card">
+            <div class="inputs-grid">
+                <div class="input-box">
+                    <label class="input-label">Equipo Local</label>
+                    <input type="text" id="input-local" class="team-input" placeholder="Ej. AS Roma" autocomplete="off">
+                </div>
+                <button class="swap-btn" id="btn-swap" title="Intercambiar">⇄</button>
+                <div class="input-box">
+                    <label class="input-label">Equipo Visitante</label>
+                    <input type="text" id="input-visitor" class="team-input" placeholder="Ej. Cagliari" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="controls-row">
+                <label class="toggle-neutral">
+                    <input type="checkbox" id="check-neutral">
+                    <span>Cancha neutral (Mundial / Final)</span>
+                </label>
+                <button class="btn-analyze" id="btn-analyze">
+                    <span>⚡ Analizar Partido</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- PANEL DE PROGRESO DE TRANSMISIÓN (SSE) -->
+        <section class="progress-box" id="progress-box">
+            <div class="progress-step-title" id="progress-step-title">Iniciando motor cuantitativo...</div>
+            <div class="progress-step-msg" id="progress-step-msg">Conectando con bases de datos en tiempo real</div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progress-bar-fill"></div>
+            </div>
+        </section>
+
+        <!-- RESULTADOS COMPLETOS DEL ANÁLISIS -->
+        <div id="results-area" style="display: none;">
+            
+            <!-- LAS 4 CÁPSULAS DE PRONÓSTICO INTELIGENTE 2026 -->
+            <div class="section-title" style="margin-bottom: 12px;">
+                <span>🎯</span> Cápsulas de Decisión Cuantitativa
+            </div>
+            
+            <section class="capsules-grid" id="capsules-grid">
+                <!-- Inyectado dinámicamente con JavaScript -->
+            </section>
+
+            <!-- DETALLES PRE-PARTIDO: ÁRBITRO, ESTADIO Y ALINEACIONES -->
+            <section class="prematch-details-grid">
+                <!-- TARJETA ÁRBITRO -->
+                <div class="detail-panel">
+                    <div class="detail-header">
+                        <span class="detail-header-title">⚖️ Colegiado Designado</span>
+                        <span id="badge-arbitro-tarjetero" class="capsule-metric" style="color: var(--accent-gold);">Analizando...</span>
+                    </div>
+                    <div class="detail-content" id="content-arbitro">
+                        <div class="detail-highlight" id="arbitro-nombre">-</div>
+                        <div style="font-size: 12px; margin-top: 4px;" id="arbitro-desc">-</div>
+                    </div>
+                </div>
+
+                <!-- TARJETA ESTADIO Y CLIMA -->
+                <div class="detail-panel">
+                    <div class="detail-header">
+                        <span class="detail-header-title">🏟️ Escenario y Clima</span>
+                        <span id="badge-clima" class="capsule-metric" style="color: var(--accent-cyan);">Campo</span>
+                    </div>
+                    <div class="detail-content" id="content-estadio">
+                        <div class="detail-highlight" id="estadio-nombre">-</div>
+                        <div style="font-size: 12px; margin-top: 4px;" id="estadio-clima-desc">-</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ALINEACIONES TITULARES CONFIRMADAS -->
+            <section class="detail-panel" style="margin-bottom: 24px;" id="panel-alineaciones">
+                <div class="detail-header">
+                    <span class="detail-header-title">📋 Alineaciones Oficiales Confirmadas</span>
+                    <span class="lineups-badge" id="badge-alineaciones-estado">✓ Oficiales</span>
+                </div>
+                <div class="lineups-container">
+                    <div>
+                        <div class="lineup-col-title" id="title-lineup-local">Local</div>
+                        <div id="list-lineup-local"></div>
+                    </div>
+                    <div>
+                        <div class="lineup-col-title" id="title-lineup-visitor" style="color: var(--accent-cyan);">Visitante</div>
+                        <div id="list-lineup-visitor"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TABS DE DETALLES TÉCNICOS -->
+            <div class="results-nav">
+                <button class="result-tab-btn active" data-tab="tab-scenarios">Escenarios Estocásticos (10)</button>
+                <button class="result-tab-btn" data-tab="tab-report">Reporte Ejecutivo</button>
+            </div>
+
+            <!-- TAB 1: 10 ESCENARIOS ESTOCÁSTICOS -->
+            <div class="tab-pane active" id="tab-scenarios">
+                <div class="scenarios-list" id="scenarios-list"></div>
+            </div>
+
+            <!-- TAB 2: REPORTE COMPLETO MARKDOWN -->
+            <div class="tab-pane" id="tab-report">
+                <div class="markdown-body" id="report-content"></div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- NAVEGACIÓN INFERIOR PWA / APK -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" id="nav-analizador">
+            <span class="nav-icon">📊</span>
+            <span>Terminal</span>
+        </button>
+        <button class="nav-item" id="nav-partidos">
+            <span class="nav-icon">⚽</span>
+            <span>En Vivo</span>
+        </button>
+        <button class="nav-item" id="nav-historial">
+            <span class="nav-icon">📁</span>
+            <span>Historial</span>
+        </button>
+    </nav>
+
     <script>
-        const form = document.getElementById('analyze-form');
-        const btnSubmit = document.getElementById('btn-submit');
-        const btnText = document.getElementById('btn-text');
-        const btnSpinner = document.getElementById('btn-spinner');
-        const progressPanel = document.getElementById('progress-panel');
-        const resultsPanel = document.getElementById('results-panel');
-        const consoleLog = document.getElementById('console-log');
-        const simGrid = document.getElementById('sim-grid');
-
-        let eventSource = null;
-        let activeAnalysisData = null; // Store complete data for live client-side sliders recalculating
-
-        function swapTeams() {
-            const local = document.getElementById('local-input');
-            const visitor = document.getElementById('visitor-input');
-            const temp = local.value;
-            local.value = visitor.value;
-            visitor.value = temp;
-        }
-
-        function copyPickToClipboard() {
-            const pick = document.getElementById('dashboard-pick-text').textContent;
-            const stake = document.getElementById('dashboard-pick-stake').textContent;
-            const text = `🎯 Sharp Pick (ROM LUDOPATA SBIE v2.0):\n${pick}\nStake Sugerido: ${stake}`;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('¡Pick copiado al portapapeles!');
-            }).catch(() => {
-                alert('Pick: ' + text);
+        // ── REGISTRO DE SERVICE WORKER PARA PWA/APK ──
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js').catch(err => console.log('SW error:', err));
             });
         }
 
-        function fillChatPrompt(text) {
-            const chatInput = document.getElementById('chat-input');
-            chatInput.value = text;
-            chatInput.focus();
-        }
+        // ── ESTADO GLOBAL ──
+        let currentMatches = [];
 
-        // 1. Tab switching logic
-        function switchMainTab(tabId) {
-            document.querySelectorAll('.tabs-header > .tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            if (tabId === 'tab-analyzer-view') {
-                document.getElementById('nav-btn-analyzer').classList.add('active');
-            } else if (tabId === 'tab-chat-view') {
-                document.getElementById('nav-btn-chat').classList.add('active');
-            }
-            document.querySelectorAll('.container > .tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.getElementById(tabId).classList.add('active');
-        }
-
-        function switchResultTab(tabId, btn) {
-            document.querySelectorAll('#results-panel > .tabs-header > .tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.querySelectorAll('#results-panel > .tab-content').forEach(c => c.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-        }
-
-        // 3. Analyze form and SSE listener
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const local = document.getElementById('local-input').value.trim();
-            const visitor = document.getElementById('visitor-input').value.trim();
-
-            if (!local || !visitor) return;
-
-            // Reset UI for load
-            btnSubmit.disabled = true;
-            btnText.textContent = "Procesando...";
-            btnSpinner.classList.remove('hidden');
-            progressPanel.classList.remove('hidden');
-            resultsPanel.classList.add('hidden');
-            consoleLog.innerHTML = `<div class="console-line info">&gt; Iniciando análisis de alta eficiencia para ${local} vs ${visitor}...</div>`;
-            
-            document.getElementById('match-status-warning').classList.add('hidden');
-            document.getElementById('tactics-warning-box').classList.add('hidden');
-            
-            document.querySelectorAll('.step-item').forEach(el => {
-                el.classList.remove('active', 'completed');
-            });
-            document.getElementById('step-1').classList.add('active');
-
-            for (let i = 1; i <= 10; i++) {
-                const card = document.getElementById(`sim-card-${i}`);
-                card.classList.remove('done');
-                card.querySelector('.sim-score').textContent = "-";
-            }
-
-            // Reset sliders to 1.0x and handle neutral lockout
-            const isNeutral = document.getElementById('neutral-checkbox').checked;
-            const sliderLocalia = document.getElementById('slider-localia');
-            if (isNeutral) {
-                sliderLocalia.value = 1;
-                sliderLocalia.disabled = true;
-                document.getElementById('slider-localia-val').textContent = "Desactivada (Cancha Neutral)";
-            } else {
-                sliderLocalia.value = 1;
-                sliderLocalia.disabled = false;
-                document.getElementById('slider-localia-val').textContent = "1.0x (Estándar)";
-            }
-            document.getElementById('slider-clima').value = 1;
-            document.getElementById('slider-arbitro').value = 1;
-            document.getElementById('slider-clima-val').textContent = "1.0x (Normal)";
-            document.getElementById('slider-arbitro-val').textContent = "1.0x (Normal)";
-
-            const url = `/api/analyze?local=${encodeURIComponent(local)}&visitor=${encodeURIComponent(visitor)}&neutral=${isNeutral}`;
-            if (eventSource) eventSource.close();
-            
-            eventSource = new EventSource(url);
-
-            eventSource.onmessage = function(event) {
-                const data = JSON.parse(event.data);
+        // ── CARGA DEL CARRUSEL DE PARTIDOS DESTACADOS ──
+        async function loadFeaturedMatches() {
+            const carousel = document.getElementById('featured-carousel');
+            try {
+                const res = await fetch('/api/matches/featured');
+                const data = await res.json();
                 
-                if (data.status === "error") {
-                    addConsoleLine(data.message, "error");
-                    resetButton();
-                    eventSource.close();
+                if (!data.matches || data.matches.length === 0) {
+                    carousel.innerHTML = '<div style="padding: 12px; font-size: 12px; color: var(--text-muted);">No hay partidos destacados programados en este instante.</div>';
                     return;
                 }
 
-                addConsoleLine(data.message, data.status === "simulando_progreso" ? "success" : "info");
-                updateStepper(data.step);
+                currentMatches = data.matches;
+                carousel.innerHTML = '';
 
-                if (data.status === "simulando_progreso") {
-                    const sim = data.simulacion;
-                    const card = document.getElementById(`sim-card-${sim.simulacion_id}`);
-                    if (card) {
-                        card.classList.add('done');
-                        card.querySelector('.sim-score').textContent = data.resultado;
+                data.matches.forEach(m => {
+                    const card = document.createElement('div');
+                    card.className = 'featured-card';
+                    
+                    const isLive = m.status_state === 'in';
+                    const isPost = m.status_state === 'post';
+
+                    let badgeHtml = '';
+                    if (isLive) {
+                        badgeHtml = `<span class="match-badge-live">● EN VIVO ${m.status_detail || ''}</span>`;
+                    } else if (isPost) {
+                        badgeHtml = `<span class="match-badge-time" style="color: var(--text-muted);">FINALIZADO (${m.home_score}-${m.away_score})</span>`;
+                    } else {
+                        badgeHtml = `<span class="match-badge-time">⏰ ${m.status_detail || 'Hoy'}</span>`;
                     }
-                }
 
-                if (data.status === "completado") {
-                    activeAnalysisData = data; // Cache data globally to allow what-if recalculation
-                    document.querySelectorAll('.step-item').forEach(el => {
-                        el.classList.remove('active');
-                        el.classList.add('completed');
+                    const scoreLocal = m.home_score !== null && m.home_score !== undefined ? m.home_score : '-';
+                    const scoreAway = m.away_score !== null && m.away_score !== undefined ? m.away_score : '-';
+
+                    card.innerHTML = `
+                        <div class="card-top">
+                            <span class="league-chip">${m.league_name}</span>
+                            ${badgeHtml}
+                        </div>
+                        <div class="card-teams">
+                            <div class="team-row">
+                                <span>${m.home_team}</span>
+                                <span class="team-score">${scoreLocal}</span>
+                            </div>
+                            <div class="team-row">
+                                <span>${m.away_team}</span>
+                                <span class="team-score">${scoreAway}</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <span class="lineups-badge">✓ Alineación oficial disponible</span>
+                            <span>⚡ Analizar</span>
+                        </div>
+                    `;
+
+                    card.addEventListener('click', () => {
+                        document.querySelectorAll('.featured-card').forEach(c => c.classList.remove('active-match'));
+                        card.classList.add('active-match');
+                        document.getElementById('input-local').value = m.home_team;
+                        document.getElementById('input-visitor').value = m.away_team;
+                        
+                        // Scroll suave al formulario
+                        document.querySelector('.search-card').scrollIntoView({ behavior: 'smooth' });
                     });
-                    
-                    updateVisualDashboard(data, local, visitor);
-                    
-                    const htmlReport = marked.parse(data.reporte);
-                    document.getElementById('tab-report').innerHTML = htmlReport;
 
-                    renderDetailedSimulations(data.simulaciones, local, visitor);
+                    carousel.appendChild(card);
+                });
 
-                    resultsPanel.classList.remove('hidden');
-                    resetButton();
-                    eventSource.close();
-                    resultsPanel.scrollIntoView({ behavior: 'smooth' });
+            } catch (err) {
+                console.error('Error cargando partidos destacados:', err);
+                carousel.innerHTML = '<div style="padding: 12px; font-size: 12px; color: var(--text-muted);">Error conectando a ESPN API.</div>';
+            }
+        }
+
+        // ── FILTROS DE LIGA ──
+        document.querySelectorAll('.league-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                document.querySelectorAll('.league-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const league = btn.dataset.league;
+                
+                const carousel = document.getElementById('featured-carousel');
+                carousel.innerHTML = '<div style="padding: 12px; font-size: 12px; color: var(--text-muted);">Cargando partidos de la liga...</div>';
+                
+                try {
+                    const res = await fetch(`/api/matches/today?league=${league}`);
+                    const data = await res.json();
+                    if (!data.matches || data.matches.length === 0) {
+                        carousel.innerHTML = '<div style="padding: 12px; font-size: 12px; color: var(--text-muted);">No hay más partidos programados hoy en esta liga.</div>';
+                        return;
+                    }
+
+                    carousel.innerHTML = '';
+                    data.matches.forEach(m => {
+                        const card = document.createElement('div');
+                        card.className = 'featured-card';
+                        const isLive = m.status_state === 'in';
+                        const isPost = m.status_state === 'post';
+                        let badgeHtml = isLive 
+                            ? `<span class="match-badge-live">● EN VIVO</span>`
+                            : (isPost ? `<span class="match-badge-time" style="color: var(--text-muted);">FINAL ${m.home_score}-${m.away_score}</span>` : `<span class="match-badge-time">⏰ ${m.status_detail}</span>`);
+
+                        card.innerHTML = `
+                            <div class="card-top">
+                                <span class="league-chip">${m.league_name}</span>
+                                ${badgeHtml}
+                            </div>
+                            <div class="card-teams">
+                                <div class="team-row"><span>${m.home_team}</span><span class="team-score">${m.home_score ?? '-'}</span></div>
+                                <div class="team-row"><span>${m.away_team}</span><span class="team-score">${m.away_score ?? '-'}</span></div>
+                            </div>
+                            <div class="card-footer">
+                                <span class="lineups-badge">✓ Ver detalles</span>
+                                <span>⚡ Cargar</span>
+                            </div>
+                        `;
+
+                        card.addEventListener('click', () => {
+                            document.getElementById('input-local').value = m.home_team;
+                            document.getElementById('input-visitor').value = m.away_team;
+                            document.querySelector('.search-card').scrollIntoView({ behavior: 'smooth' });
+                        });
+
+                        carousel.appendChild(card);
+                    });
+                } catch (e) {
+                    carousel.innerHTML = '<div style="padding: 12px; font-size: 12px; color: var(--text-muted);">Error al consultar liga.</div>';
+                }
+            });
+        });
+
+        // ── INTERCAMBIO DE EQUIPOS ──
+        document.getElementById('btn-swap').addEventListener('click', () => {
+            const loc = document.getElementById('input-local');
+            const vis = document.getElementById('input-visitor');
+            const tmp = loc.value;
+            loc.value = vis.value;
+            vis.value = tmp;
+        });
+
+        // ── BOTÓN DE ANÁLISIS CUANTITATIVO (SSE STREAMING) ──
+        const btnAnalyze = document.getElementById('btn-analyze');
+        const progressBox = document.getElementById('progress-box');
+        const progressTitle = document.getElementById('progress-step-title');
+        const progressMsg = document.getElementById('progress-step-msg');
+        const progressFill = document.getElementById('progress-bar-fill');
+        const resultsArea = document.getElementById('results-area');
+
+        btnAnalyze.addEventListener('click', () => {
+            const local = document.getElementById('input-local').value.trim();
+            const visitor = document.getElementById('input-visitor').value.trim();
+            const neutral = document.getElementById('check-neutral').checked;
+
+            if (!local || !visitor) {
+                alert('Por favor introduce ambos equipos o selecciona uno del carrusel superior.');
+                return;
+            }
+
+            btnAnalyze.disabled = true;
+            progressBox.style.display = 'block';
+            resultsArea.style.display = 'none';
+            progressFill.style.width = '10%';
+            progressTitle.textContent = 'Fase 1: Recolectando Datos Oficiales';
+            progressMsg.textContent = `Consultando ESPN y bases de datos para ${local} vs ${visitor}...`;
+
+            const url = `/api/analyze?local=${encodeURIComponent(local)}&visitor=${encodeURIComponent(visitor)}&neutral=${neutral}`;
+            const eventSource = new EventSource(url);
+
+            eventSource.onmessage = (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    
+                    if (data.status === 'error') {
+                        progressTitle.textContent = 'Error en el Análisis';
+                        progressMsg.textContent = data.message;
+                        btnAnalyze.disabled = false;
+                        eventSource.close();
+                        return;
+                    }
+
+                    if (data.step === 1) {
+                        progressFill.style.width = '25%';
+                        progressTitle.textContent = 'Fase 1: Alineaciones y Entorno Oficial';
+                        progressMsg.textContent = data.message;
+                    } else if (data.step === 2) {
+                        progressFill.style.width = '45%';
+                        progressTitle.textContent = 'Fase 2: Perfilado Táctico de Jugadores';
+                        progressMsg.textContent = data.message;
+                    } else if (data.step === 3) {
+                        progressFill.style.width = '70%';
+                        progressTitle.textContent = 'Fase 3: 10,000 Simulaciones de Monte Carlo & Dixon-Coles';
+                        progressMsg.textContent = data.message;
+                    } else if (data.step === 4) {
+                        progressFill.style.width = '90%';
+                        progressTitle.textContent = 'Fase 4: Análisis de Valor (+EV) y Kelly';
+                        progressMsg.textContent = data.message;
+                    } else if (data.status === 'completado') {
+                        progressFill.style.width = '100%';
+                        progressBox.style.display = 'none';
+                        btnAnalyze.disabled = false;
+                        eventSource.close();
+                        
+                        renderResults(data, local, visitor);
+                    }
+                } catch (err) {
+                    console.error('Error parseando SSE:', err);
                 }
             };
 
-            eventSource.onerror = function(err) {
-                addConsoleLine("Error de comunicación en tiempo real. Reconectando...", "error");
-                resetButton();
+            eventSource.onerror = () => {
+                btnAnalyze.disabled = false;
                 eventSource.close();
             };
         });
 
-        function addConsoleLine(text, type = "info") {
-            const line = document.createElement('div');
-            line.className = `console-line ${type}`;
-            line.innerHTML = `&gt; ${text}`;
-            consoleLog.appendChild(line);
-            consoleLog.scrollTop = consoleLog.scrollHeight;
-        }
+        // ── RENDERIZADO DE RESULTADOS & LAS 4 CÁPSULAS DE PRONÓSTICO ──
+        function renderResults(data, local, visitor) {
+            resultsArea.style.display = 'block';
+            resultsArea.scrollIntoView({ behavior: 'smooth' });
 
-        function updateStepper(step) {
-            if (!step) return;
-            for (let i = 1; i <= 5; i++) {
-                const item = document.getElementById(`step-${i}`);
-                if (i < step) {
-                    item.classList.remove('active');
-                    item.classList.add('completed');
-                } else if (i === step) {
-                    item.classList.remove('completed');
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active', 'completed');
-                }
-            }
-        }
+            const caps = data.capsulas_pronostico || {};
+            const capsGrid = document.getElementById('capsules-grid');
+            capsGrid.innerHTML = '';
 
-        function resetButton() {
-            btnSubmit.disabled = false;
-            btnText.textContent = "Iniciar Análisis";
-            btnSpinner.classList.add('hidden');
-        }
+            // CÁPSULA 1: GANADOR 1X2 / VALOR (+EV)
+            const c1 = caps.ganador_1x2 || {};
+            const isValue = c1.tipo === 'VALOR_ENCONTRADO';
+            const card1 = document.createElement('div');
+            card1.className = `capsule-card ${isValue ? '' : 'card-warning'}`;
+            card1.innerHTML = `
+                <div class="capsule-header">
+                    <span class="capsule-label">Veredicto 1X2</span>
+                    <span class="capsule-metric" style="color: ${isValue ? 'var(--accent-green)' : 'var(--accent-gold)'};">
+                        ${isValue ? '+EV Detectado' : 'Precaución Bookie'}
+                    </span>
+                </div>
+                <div class="capsule-pick">${c1.pick || 'Sin recomendación'}</div>
+                <div class="capsule-desc">${c1.justificacion || ''}</div>
+                <div class="capsule-ev-badge ${isValue ? 'ev-positive' : 'ev-neutral'}">
+                    ${isValue ? `Cuota de valor: ${c1.cuota_mercado} | Stake Kelly: ${c1.stake_kelly_sugerido}%` : 'Recomendación: Evitar 1X2 directo'}
+                </div>
+            `;
+            capsGrid.appendChild(card1);
 
-        // 4. Render Dashboard and Stars (ROM 1.1 FUT FUT Cards)
-        function updateVisualDashboard(data, local, visitor) {
-            const env = data.environment || {
-                "estadio_nombre": "Desconocido",
-                "estadio_capacidad": "N/A",
-                "estadio_cesped": "Natural",
-                "estadio_localia_impacto": "No hay información disponible.",
-                "clima_pronostico": "Despejado / Clima estándar",
-                "arbitro_nombre": "Desconocido",
-                "arbitro_promedio_tarjetas": "N/A",
-                "arbitro_tarjetero": "No",
-                "arbitro_estilo": "No hay información disponible."
-            };
-            const tactics = data.tactics || {};
-            const stats = data.market_analysis.estadisticas_simuladas || {};
-            const market = data.market_analysis.datos_mercado || {};
+            // CÁPSULA 2: GOLES TOTALES
+            const c2 = caps.goles || {};
+            const card2 = document.createElement('div');
+            card2.className = 'capsule-card card-cyan';
+            card2.innerHTML = `
+                <div class="capsule-header">
+                    <span class="capsule-label">Línea de Goles</span>
+                    <span class="capsule-metric" style="color: var(--accent-cyan);">${c2.probabilidad || 0}% Prob</span>
+                </div>
+                <div class="capsule-pick" style="color: var(--accent-cyan);">${c2.pick || 'Goles'}</div>
+                <div class="capsule-desc">${c2.justificacion || ''}</div>
+                <div class="capsule-ev-badge" style="background: rgba(0, 210, 255, 0.12); color: var(--accent-cyan); border: 1px solid rgba(0, 210, 255, 0.3);">
+                    xG Combinado: ${c2.goles_esperados_combinados || 'N/A'} goles
+                </div>
+            `;
+            capsGrid.appendChild(card2);
 
-            // 1. Names and Neutral venue badges
-            const sliderLocalia = document.getElementById('slider-localia');
-            if (env.es_cancha_neutral) {
-                sliderLocalia.value = 1;
-                sliderLocalia.disabled = true;
-                document.getElementById('slider-localia-val').textContent = "Desactivada (Cancha Neutral)";
-                document.getElementById('dashboard-local-name').innerHTML = `${local} <span style="font-size: 0.65rem; background: rgba(0, 240, 255, 0.12); color: var(--accent-cyan); border: 1px solid rgba(0, 240, 255, 0.25); padding: 0.15rem 0.35rem; border-radius: 4px; vertical-align: middle; margin-left: 0.4rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em;">Neutral</span>`;
-                document.getElementById('dashboard-visitor-name').innerHTML = `${visitor} <span style="font-size: 0.65rem; background: rgba(0, 240, 255, 0.12); color: var(--accent-cyan); border: 1px solid rgba(0, 240, 255, 0.25); padding: 0.15rem 0.35rem; border-radius: 4px; vertical-align: middle; margin-left: 0.4rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em;">Neutral</span>`;
-            } else {
-                sliderLocalia.disabled = false;
-                document.getElementById('dashboard-local-name').textContent = local;
-                document.getElementById('dashboard-visitor-name').textContent = visitor;
-            }
-            
-            // 2. Stadium
-            document.getElementById('env-stadium-name').textContent = env.estadio_nombre;
-            document.getElementById('env-stadium-capacity').textContent = env.estadio_capacidad;
-            document.getElementById('env-stadium-grass').textContent = env.estadio_cesped;
-            document.getElementById('env-weather').textContent = env.clima_pronostico;
-            document.getElementById('env-stadium-impact').textContent = env.estadio_localia_impacto;
+            // CÁPSULA 3: CÓRNERS
+            const c3 = caps.corners || {};
+            const card3 = document.createElement('div');
+            card3.className = 'capsule-card';
+            card3.innerHTML = `
+                <div class="capsule-header">
+                    <span class="capsule-label">Tiros de Esquina</span>
+                    <span class="capsule-metric" style="color: var(--accent-green);">${c3.probabilidad || 0}% Prob</span>
+                </div>
+                <div class="capsule-pick">${c3.pick || 'Córners'}</div>
+                <div class="capsule-desc">${c3.justificacion || ''}</div>
+                <div class="capsule-ev-badge ev-positive">
+                    Promedio Estimado: ${c3.promedio_esperado || 'N/A'} córners
+                </div>
+            `;
+            capsGrid.appendChild(card3);
 
-            // 3. Referee
-            document.getElementById('env-ref-name').textContent = env.arbitro_nombre;
-            document.getElementById('env-ref-cards').textContent = env.arbitro_promedio_tarjetas;
-            document.getElementById('env-ref-style').textContent = env.arbitro_estilo;
-            
-            const refBadge = document.getElementById('env-ref-badge');
-            if (env.arbitro_tarjetero === "Sí" || env.arbitro_tarjetero === "SI" || env.arbitro_tarjetero === "si") {
-                refBadge.classList.remove('hidden');
-            } else {
-                refBadge.classList.add('hidden');
-            }
+            // CÁPSULA 4: TARJETAS Y ÁRBITRO
+            const c4 = caps.disciplina_arbitro || {};
+            const card4 = document.createElement('div');
+            card4.className = 'capsule-card card-warning';
+            card4.innerHTML = `
+                <div class="capsule-header">
+                    <span class="capsule-label">Disciplina & Árbitro</span>
+                    <span class="capsule-metric" style="color: var(--accent-gold);">${c4.probabilidad || 0}% Prob</span>
+                </div>
+                <div class="capsule-pick" style="color: var(--accent-gold);">${c4.pick || 'Tarjetas'}</div>
+                <div class="capsule-desc">${c4.justificacion || ''}</div>
+                <div class="capsule-ev-badge ev-neutral">
+                    ${c4.arbitro || 'Árbitro'} (${c4.perfil_arbitral || 'Normal'})
+                </div>
+            `;
+            capsGrid.appendChild(card4);
 
-            // 4. Recalculate and fill Poisson Widgets
-            renderPoissonOutput(stats, market, local, visitor);
+            // DETALLES ÁRBITRO Y ESTADIO
+            const env = data.environment || {};
+            document.getElementById('arbitro-nombre').textContent = env.arbitro_nombre || c4.arbitro || 'Oficial de Partido';
+            document.getElementById('arbitro-desc').textContent = `${env.arbitro_estilo || 'Sin historial de amonestaciones atípico'}. Promedio amonestaciones: ${c4.promedio_tarjetas || '4.0'} / juego.`;
+            document.getElementById('badge-arbitro-tarjetero').textContent = c4.perfil_arbitral || 'Estándar';
 
-            // 5. Tactics
-            document.getElementById('tactics-local-label').textContent = local;
-            document.getElementById('tactics-local-form').textContent = tactics.local_formacion || "N/A";
-            document.getElementById('tactics-local-style').textContent = tactics.local_estilo || "Estilo estándar.";
+            document.getElementById('estadio-nombre').textContent = env.estadio_nombre || 'Estadio Principal';
+            document.getElementById('estadio-clima-desc').textContent = `${env.clima_pronostico || 'Césped en óptimas condiciones'}. ${env.estadio_localia_impacto || ''}`;
 
-            document.getElementById('tactics-visitor-label').textContent = visitor;
-            document.getElementById('tactics-visitor-form').textContent = tactics.visitante_formacion || "N/A";
-            document.getElementById('tactics-visitor-style').textContent = tactics.visitante_estilo || "Estilo estándar.";
+            // ALINEACIONES TITULARES
+            const tac = data.tactics || {};
+            document.getElementById('title-lineup-local').textContent = `${local} (Titulares)`;
+            document.getElementById('title-lineup-visitor').textContent = `${visitor} (Titulares)`;
 
-            document.getElementById('tactics-matchup').textContent = tactics.analisis_enfrentamiento || "Sin detalles.";
-            document.getElementById('tactics-zones').textContent = tactics.zonas_clave || "Medio campo.";
-            document.getElementById('tactics-advantage').textContent = tactics.ventaja_tactica || "Ninguna clara.";
+            const listLoc = document.getElementById('list-lineup-local');
+            const listVis = document.getElementById('list-lineup-visitor');
+            listLoc.innerHTML = '';
+            listVis.innerHTML = '';
 
-            // Lineups Banners
-            const isOfficial = tactics.hasOwnProperty('alineaciones_oficiales') ? tactics.alineaciones_oficiales : true;
-            const matchWarningEl = document.getElementById('match-status-warning');
-            const tacticsWarningEl = document.getElementById('tactics-warning-box');
-            const tacticsHeaderEl = document.getElementById('tactics-header-title');
+            const hPlayers = tac.local_once_titular || [];
+            const vPlayers = tac.visitante_once_titular || [];
 
-            if (!isOfficial) {
-                const warningMsg = tactics.advertencia_lineas || "⚠️ Alineaciones del último partido (No Oficiales)";
-                matchWarningEl.textContent = warningMsg;
-                matchWarningEl.classList.remove('hidden');
-                tacticsWarningEl.textContent = warningMsg;
-                tacticsWarningEl.classList.remove('hidden');
-                if (tacticsHeaderEl) tacticsHeaderEl.textContent = "Análisis Táctico (Alineaciones de Referencia)";
-            } else {
-                matchWarningEl.classList.add('hidden');
-                tacticsWarningEl.classList.add('hidden');
-                if (tacticsHeaderEl) tacticsHeaderEl.textContent = "Análisis Táctico (Alineaciones Oficiales)";
-            }
-
-            // 6. Generate and Render Star FUT Cards (NUEVO ROM 1.1)
-            const localLineup = data.reporte.match(/Alineación probable.*?(?=\n\n|\n\*)/i) ? data.reporte.match(/Alineación probable.*?(?=\n\n|\n\*)/i)[0] : "";
-            const visitorLineup = data.reporte.match(/Alineación probable Visitante.*?(?=\n\n|\n\*)/i) ? data.reporte.match(/Alineación probable Visitante.*?(?=\n\n|\n\*)/i)[0] : "";
-            const stars = getStarPlayers(localLineup, visitorLineup, local, visitor);
-            renderFUTStars(stars.localStars, stars.visitorStars, local, visitor);
-        }
-
-        // Star player parser and renderer
-        function getStarPlayers(localLineupStr, visitorLineupStr, localTeam, visitorTeam) {
-            const database = {
-                "real madrid": [
-                    {name: "Mbappé", pos: "DEL", att: 94, def: 35},
-                    {name: "Vini Jr", pos: "DEL", att: 93, def: 30},
-                    {name: "Bellingham", pos: "MC", att: 90, def: 78},
-                    {name: "Valverde", pos: "MC", att: 88, def: 80},
-                    {name: "Courtois", pos: "POR", att: 5, def: 90}
-                ],
-                "barcelona": [
-                    {name: "Lewandowski", pos: "DEL", att: 90, def: 32},
-                    {name: "Lamine Yamal", pos: "DEL", att: 89, def: 35},
-                    {name: "Raphinha", pos: "DEL", att: 86, def: 40},
-                    {name: "Pedri", pos: "MC", att: 86, def: 70},
-                    {name: "Ter Stegen", pos: "POR", att: 5, def: 88}
-                ],
-                "argentina": [
-                    {name: "Lionel Messi", pos: "DEL", att: 92, def: 30},
-                    {name: "Julián Álvarez", pos: "DEL", att: 86, def: 45},
-                    {name: "Mac Allister", pos: "MC", att: 84, def: 75},
-                    {name: "E. Martínez", pos: "POR", att: 5, def: 87}
-                ],
-                "francia": [
-                    {name: "K. Mbappé", pos: "DEL", att: 94, def: 35},
-                    {name: "Griezmann", pos: "DEL", att: 88, def: 65},
-                    {name: "Tchouaméni", pos: "MC", att: 82, def: 84},
-                    {name: "Maignan", pos: "POR", att: 5, def: 86}
-                ],
-                "mexico": [
-                    {name: "Santi Giménez", pos: "DEL", att: 82, def: 30},
-                    {name: "Edson Álvarez", pos: "MC", att: 76, def: 84},
-                    {name: "Luis Chávez", pos: "MC", att: 78, def: 72},
-                    {name: "Malagón", pos: "POR", att: 5, def: 80}
-                ]
-            };
-            
-            function parseStarPlayers(lineupStr, teamName) {
-                const teamKey = teamName.toLowerCase().replace(/[áéíóú]/g, function(match) {
-                    return { 'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u' }[match];
-                }).trim();
-                
-                let stars = [];
-                for (let key in database) {
-                    if (teamKey.includes(key) || key.includes(teamKey)) {
-                        stars = [...database[key]];
-                        break;
-                    }
-                }
-                
-                if (stars.length < 3) {
-                    const cleanLineup = lineupStr.replace(/confirmada|oficial|titular|hoy|alineacion/gi, '');
-                    const names = cleanLineup.split(/[,;.]/).map(n => n.replace(/\(gk\)|\(c\)|\bgk\b|\bc\b/gi, '').trim()).filter(n => n.length > 3);
-                    
-                    names.forEach(name => {
-                        if (stars.find(s => s.name.toLowerCase().includes(name.toLowerCase()))) return;
-                        
-                        let hash = 0;
-                        for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i);
-                        
-                        const pos = ["DEL", "MC", "DEF", "POR"][hash % 4];
-                        let att = 75 + (hash % 15);
-                        let def = 40 + (hash % 45);
-                        if (pos === "POR") { att = 5; def = 75 + (hash % 15); }
-                        else if (pos === "DEF") { att = 40 + (hash % 20); def = 75 + (hash % 15); }
-                        else if (pos === "DEL") { att = 78 + (hash % 15); def = 30 + (hash % 15); }
-                        
-                        stars.push({ name, pos, att, def });
-                    });
-                }
-                return stars.slice(0, 3);
-            }
-            
-            return {
-                localStars: parseStarPlayers(localLineupStr, localTeam),
-                visitorStars: parseStarPlayers(visitorLineupStr, visitorTeam)
-            };
-        }
-
-        function renderFUTStars(localStars, visitorStars, local, visitor) {
-            const container = document.getElementById('star-players-container');
-            container.innerHTML = "";
-
-            function createCard(p, teamName) {
-                const card = document.createElement('div');
-                card.className = "fut-card";
-                
-                const ovr = Math.round((p.att + p.def) / 2);
-                const pac = 60 + (p.att % 35);
-                const sho = p.att;
-                const pas = 65 + (p.def % 30);
-                const dri = 70 + (p.att % 25);
-                const df = p.def;
-                const phy = 70 + (p.def % 20);
-                
-                card.innerHTML = `
-                    <div class="fut-rating-row">
-                        <div class="fut-rating">${ovr}</div>
-                        <div class="fut-pos">${p.pos}</div>
-                    </div>
-                    <div class="fut-name">${p.name}</div>
-                    <div style="font-size: 0.65rem; color: rgba(255,255,255,0.75); margin-bottom: 0.5rem; text-transform: uppercase;">${teamName}</div>
-                    <div class="fut-stats-grid">
-                        <div>PAC: <span class="fut-stat-val">${pac}</span></div>
-                        <div>SHO: <span class="fut-stat-val">${sho}</span></div>
-                        <div>PAS: <span class="fut-stat-val">${pas}</span></div>
-                        <div>DRI: <span class="fut-stat-val">${dri}</span></div>
-                        <div>DEF: <span class="fut-stat-val">${df}</span></div>
-                        <div>PHY: <span class="fut-stat-val">${phy}</span></div>
-                    </div>
-                `;
-                return card;
-            }
-
-            localStars.forEach(p => container.appendChild(createCard(p, local)));
-            visitorStars.forEach(p => container.appendChild(createCard(p, visitor)));
-        }
-
-        // 5. Poisson Mathematics Helpers
-        function poissonPdf(k, lambda) {
-            let p = Math.exp(-lambda);
-            for (let i = 1; i <= k; i++) {
-                p *= lambda / i;
-            }
-            return p;
-        }
-
-        function cumulativePoisson(threshold, lambda) {
-            let sum = 0;
-            for (let k = 0; k <= threshold; k++) {
-                sum += poissonPdf(k, lambda);
-            }
-            return 1 - sum;
-        }
-
-        function calculatePoisson1X2(lambdaL, lambdaV) {
-            let pL = 0, pD = 0, pV = 0;
-            for (let i = 0; i <= 10; i++) {
-                let pdfL = poissonPdf(i, lambdaL);
-                for (let j = 0; j <= 10; j++) {
-                    let pdfV = poissonPdf(j, lambdaV);
-                    let joint = pdfL * pdfV;
-                    if (i > j) pL += joint;
-                    else if (i === j) pD += joint;
-                    else pV += joint;
-                }
-            }
-            let sum = pL + pD + pV;
-            return {
-                local: (pL / sum) * 100,
-                draw: (pD / sum) * 100,
-                visitor: (pV / sum) * 100
-            };
-        }
-
-        // Render Poisson Widgets
-        function renderPoissonOutput(stats, market, local, visitor) {
-            const pLoc = stats.probabilidad_local_porcentaje;
-            const pDra = stats.probabilidad_empate_porcentaje;
-            const pVis = stats.probabilidad_visitante_porcentaje;
-
-            // Progress segments
-            document.getElementById('bar-1x2-local').style.width = `${pLoc}%`;
-            document.getElementById('bar-1x2-local').textContent = `${local}: ${pLoc.toFixed(1)}%`;
-            document.getElementById('bar-1x2-draw').style.width = `${pDra}%`;
-            document.getElementById('bar-1x2-draw').textContent = `Empate: ${pDra.toFixed(1)}%`;
-            document.getElementById('bar-1x2-visitor').style.width = `${pVis}%`;
-            document.getElementById('bar-1x2-visitor').textContent = `${visitor}: ${pVis.toFixed(1)}%`;
-
-            // Favorite title
-            const favEl = document.getElementById('dashboard-1x2-fav');
-            if (pLoc > pVis && pLoc > pDra) {
-                favEl.textContent = `FAVORITO: ${local.toUpperCase()}`;
-                favEl.style.color = "var(--accent-cyan)";
-            } else if (pVis > pLoc && pVis > pDra) {
-                favEl.textContent = `FAVORITO: ${visitor.toUpperCase()}`;
-                favEl.style.color = "var(--accent-blue)";
-            } else {
-                favEl.textContent = "SIN FAVORITO CLARO";
-                favEl.style.color = "var(--text-muted)";
-            }
-
-            // Cell prob and fair odds
-            document.getElementById('val-prob-local').textContent = `${pLoc.toFixed(1)}%`;
-            document.getElementById('val-prob-draw').textContent = `${pDra.toFixed(1)}%`;
-            document.getElementById('val-prob-visitor').textContent = `${pVis.toFixed(1)}%`;
-
-            document.getElementById('val-fair-local').textContent = (100 / pLoc).toFixed(2);
-            document.getElementById('val-fair-draw').textContent = (100 / pDra).toFixed(2);
-            document.getElementById('val-fair-visitor').textContent = (100 / pVis).toFixed(2);
-
-            document.getElementById('val-market-local').textContent = market.cuota_local_estimada ? parseFloat(market.cuota_local_estimada).toFixed(2) : "N/A";
-            document.getElementById('val-market-draw').textContent = market.cuota_empate_estimada ? parseFloat(market.cuota_empate_estimada).toFixed(2) : "N/A";
-            document.getElementById('val-market-visitor').textContent = market.cuota_visitante_estimada ? parseFloat(market.cuota_visitante_estimada).toFixed(2) : "N/A";
-
-            // Over/Under Goals
-            document.getElementById('val-prob-over15').textContent = `${stats.probabilidad_over_1_5_porcentaje.toFixed(1)}%`;
-            document.getElementById('bar-fill-over15').style.width = `${stats.probabilidad_over_1_5_porcentaje}%`;
-            document.getElementById('val-prob-over25').textContent = `${stats.probabilidad_over_2_5_porcentaje.toFixed(1)}%`;
-            document.getElementById('bar-fill-over25').style.width = `${stats.probabilidad_over_2_5_porcentaje}%`;
-            document.getElementById('val-prob-over35').textContent = `${stats.probabilidad_over_3_5_goles_porcentaje.toFixed(1)}%`;
-            document.getElementById('bar-fill-over35').style.width = `${stats.probabilidad_over_3_5_goles_porcentaje}%`;
-
-            // Over/Under Corners
-            document.getElementById('val-prob-over85corners').textContent = `${stats.probabilidad_over_8_5_corners_porcentaje.toFixed(1)}%`;
-            document.getElementById('bar-fill-over85corners').style.width = `${stats.probabilidad_over_8_5_corners_porcentaje}%`;
-            document.getElementById('val-prob-over95corners').textContent = `${stats.probabilidad_over_9_5_corners_porcentaje.toFixed(1)}%`;
-            document.getElementById('bar-fill-over95corners').style.width = `${stats.probabilidad_over_9_5_corners_porcentaje}%`;
-            document.getElementById('val-prob-over105corners').textContent = `${stats.probabilidad_over_10_5_corners_porcentaje.toFixed(1)}%`;
-            document.getElementById('bar-fill-over105corners').style.width = `${stats.probabilidad_over_10_5_corners_porcentaje}%`;
-            document.getElementById('val-avg-corners').textContent = `L: ${stats.promedio_tiros_esquina_local.toFixed(1)} | V: ${stats.promedio_tiros_esquina_visitante.toFixed(1)}`;
-
-            // Over/Under Cards
-            document.getElementById('val-prob-over45cards').textContent = `${stats.probabilidad_over_4_5_tarjetas_porcentaje.toFixed(1)}%`;
-            document.getElementById('bar-fill-over45cards').style.width = `${stats.probabilidad_over_4_5_tarjetas_porcentaje}%`;
-            document.getElementById('val-avg-cards').textContent = `Promedio: ${stats.promedio_tarjetas_amarillas.toFixed(1)} amonestaciones`;
-
-            // Over/Under Fouls
-            document.getElementById('val-prob-over215fouls').textContent = `${stats.probabilidad_over_21_5_faltas_porcentaje.toFixed(1)}%`;
-            document.getElementById('bar-fill-over215fouls').style.width = `${stats.probabilidad_over_21_5_faltas_porcentaje}%`;
-            document.getElementById('val-prob-over255fouls').textContent = `${stats.probabilidad_over_25_5_faltas_porcentaje.toFixed(1)}%`;
-            document.getElementById('bar-fill-over255fouls').style.width = `${stats.probabilidad_over_25_5_faltas_porcentaje}%`;
-            document.getElementById('val-prob-over295fouls').textContent = `${stats.probabilidad_over_29_5_faltas_porcentaje.toFixed(1)}%`;
-            document.getElementById('bar-fill-over295fouls').style.width = `${stats.probabilidad_over_29_5_faltas_porcentaje}%`;
-            document.getElementById('val-avg-fouls').textContent = `${stats.promedio_faltas.toFixed(1)} faltas`;
-
-            // Kelly pick suggestions
-            document.getElementById('dashboard-pick-text').textContent = market.recomendacion_apuesta;
-            document.getElementById('dashboard-pick-stake').textContent = market.recomendacion_apuesta.includes("%") ? `Kelly Stake: ${market.recomendacion_apuesta.match(/(\d+(?:\.\d+)?)\s*%/)[0]}` : "1.5% Kelly (Sugerido)";
-            document.getElementById('dashboard-handicap-line').textContent = market.handicap_asiatico_linea || "N/A";
-            document.getElementById('dashboard-handicap-odds').textContent = `(${market.handicap_asiatico_cuota || "N/A"})`;
-        }
-
-        // 6. Recalculate Live sliders What-If (NUEVO ROM 1.1)
-        function recalculateWhatIf() {
-            if (!activeAnalysisData) return;
-
-            // Multipliers
-            const multLocalia = parseFloat(document.getElementById('slider-localia').value);
-            const multClima = parseFloat(document.getElementById('slider-clima').value);
-            const multArbitro = parseFloat(document.getElementById('slider-arbitro').value);
-
-            // Display labels
-            document.getElementById('slider-localia-val').textContent = `${multLocalia.toFixed(1)}x ${multLocalia === 1 ? '(Estándar)' : (multLocalia === 0 ? '(Desactivada)' : '(Modificada)')}`;
-            document.getElementById('slider-clima-val').textContent = `${multClima.toFixed(1)}x ${multClima === 1 ? '(Normal)' : (multClima < 1 ? '(Físico/Bajo)' : '(Extremo)')}`;
-            document.getElementById('slider-arbitro-val').textContent = `${multArbitro.toFixed(1)}x ${multArbitro === 1 ? '(Normal)' : (multArbitro > 1.3 ? '(Riguroso)' : '(Permisivo)')}`;
-
-            const baseStats = activeAnalysisData.market_analysis.estadisticas_simuladas;
-            
-            // Recalculate Goal lambdas
-            const isNeutral = activeAnalysisData.environment && activeAnalysisData.environment.es_cancha_neutral;
-            const multL = isNeutral ? 1.0 : multLocalia;
-            
-            let goals_l_base = baseStats.promedio_goles_local || 1.5;
-            let goals_v_base = baseStats.promedio_goles_visitor || 1.1;
-            let l_lambda = goals_l_base * multL * (1.2 - 0.2 * multClima);
-            let v_lambda = goals_v_base * (1.2 - 0.2 * multClima);
-
-            // 1X2 Probabilities
-            const p1x2 = calculatePoisson1X2(l_lambda, v_lambda);
-
-            // Goles Over/Under
-            const totalGoalsLambda = l_lambda + v_lambda;
-            const pOver15 = cumulativePoisson(1, totalGoalsLambda) * 100;
-            const pOver25 = cumulativePoisson(2, totalGoalsLambda) * 100;
-            const pOver35 = cumulativePoisson(3, totalGoalsLambda) * 100;
-
-            // Corners
-            const baseCLoc = baseStats.promedio_corners_local || 5.0;
-            const baseCVis = baseStats.promedio_corners_visitante || 4.5;
-            const expectedCLoc = baseCLoc * multClima;
-            const expectedCVis = baseCVis * multClima;
-            const cornersLambda = expectedCLoc + expectedCVis;
-            const pOver85Corners = cumulativePoisson(8, cornersLambda) * 100;
-            const pOver95Corners = cumulativePoisson(9, cornersLambda) * 100;
-            const pOver105Corners = cumulativePoisson(10, cornersLambda) * 100;
-
-            // Cards
-            const baseCards = baseStats.promedio_tarjetas || 4.5;
-            const expectedCards = baseCards * multArbitro;
-            const pOver45Cards = cumulativePoisson(4, expectedCards) * 100;
-
-            // Fouls
-            const baseFouls = baseStats.promedio_faltas || 24.0;
-            const expectedFouls = baseFouls * (0.8 * multArbitro + 0.2 * multClima);
-            const pOver215Fouls = cumulativePoisson(21, expectedFouls) * 100;
-            const pOver255Fouls = cumulativePoisson(25, expectedFouls) * 100;
-            const pOver295Fouls = cumulativePoisson(29, expectedFouls) * 100;
-
-            // Assemble recalculated stats
-            const recStats = {
-                probabilidad_local_porcentaje: p1x2.local,
-                probabilidad_visitante_porcentaje: p1x2.visitor,
-                probabilidad_empate_porcentaje: p1x2.draw,
-                probabilidad_over_1_5_porcentaje: pOver15,
-                probabilidad_over_2_5_porcentaje: pOver25,
-                probabilidad_over_3_5_goles_porcentaje: pOver35,
-                probabilidad_over_8_5_corners_porcentaje: pOver85Corners,
-                probabilidad_over_9_5_corners_porcentaje: pOver95Corners,
-                probabilidad_over_10_5_corners_porcentaje: pOver105Corners,
-                probabilidad_over_4_5_tarjetas_porcentaje: pOver45Cards,
-                probabilidad_over_21_5_faltas_porcentaje: pOver215Fouls,
-                probabilidad_over_25_5_faltas_porcentaje: pOver255Fouls,
-                probabilidad_over_29_5_faltas_porcentaje: pOver295Fouls,
-                promedio_tiros_esquina_local: expectedCLoc,
-                promedio_tiros_esquina_visitante: expectedCVis,
-                promedio_tarjetas_amarillas: expectedCards,
-                promedio_faltas: expectedFouls
-            };
-
-            // Recalculate picks recommendations
-            let recPick = "Menos de 2.5 goles o Empate";
-            if (p1x2.local > 58) {
-                recPick = `Gana ${local} (Doble Oportunidad o 1X2)`;
-            } else if (p1x2.visitor > 45) {
-                recPick = `Hándicap Asiático ${visitor} +0.5`;
-            } else if (pOver25 > 65) {
-                recPick = "Más de 2.5 Goles Totales";
-            } else if (pOver45Cards > 65) {
-                recPick = "Más de 4.5 Tarjetas Totales";
-            }
-
-            const recMarket = {
-                cuota_local_estimada: (100 / p1x2.local) * 0.95,
-                cuota_empate_estimada: (100 / p1x2.draw) * 0.95,
-                cuota_visitante_estimada: (100 / p1x2.visitor) * 0.95,
-                recomendacion_apuesta: recPick,
-                handicap_asiatico_linea: p1x2.local > p1x2.visitor ? `${local} -0.5` : `${visitor} +0.5`,
-                handicap_asiatico_cuota: 1.95
-            };
-
-            renderPoissonOutput(recStats, recMarket, local, visitor);
-        }
-
-        // 7. Visual vertical timeline for simulations (NUEVO ROM 1.1)
-        function renderDetailedSimulations(sims, local, visitor) {
-            const container = document.getElementById('simulations-detailed-list');
-            container.innerHTML = "";
-
-            sims.forEach(sim => {
-                const card = document.createElement('div');
-                card.className = "glass-card";
-                card.style.background = "rgba(255, 255, 255, 0.015)";
-                card.style.borderColor = "var(--border-card)";
-                card.style.padding = "1.25rem";
-
-                let timelineEvents = [];
-                
-                if (sim.anotadores) {
-                    sim.anotadores.forEach(a => {
-                        timelineEvents.push({
-                            minuto: a.minuto,
-                            type: "goal",
-                            class: "goal",
-                            icon: "⚽",
-                            desc: `¡GOOOOOL! ${a.jugador} anota para el equipo ${a.equipo === 'local' ? local : visitor}.`
-                        });
-                    });
-                }
-                
-                if (sim.tarjetas_amarillas) {
-                    sim.tarjetas_amarillas.forEach(t => {
-                        timelineEvents.push({
-                            minuto: t.minuto,
-                            type: "booking-yellow",
-                            class: "booking-yellow",
-                            icon: "🟨",
-                            desc: `Tarjeta Amarilla para ${t.jugador} (${t.equipo === 'local' ? local : visitor}) por juego peligroso.`
-                        });
-                    });
-                }
-
-                if (sim.tarjetas_rojas) {
-                    sim.tarjetas_rojas.forEach(t => {
-                        timelineEvents.push({
-                            minuto: t.minuto,
-                            type: "booking-red",
-                            class: "booking-red",
-                            icon: "🟥",
-                            desc: `¡TARJETA ROJA DIRECTA! ${t.jugador} (${t.equipo === 'local' ? local : visitor}) es expulsado. Motivo: ${t.motivo || 'Falta grave'}.`
-                        });
-                    });
-                }
-
-                timelineEvents.push({ minuto: 1, type: "info", class: "info", icon: "🏁", desc: "Pitazo inicial. El árbitro da inicio a las acciones en el estadio." });
-                timelineEvents.sort((a,b) => a.minuto - b.minuto);
-                timelineEvents.push({ minuto: 90, type: "info", class: "info", icon: "🏁", desc: `Final del encuentro. Marcador de Poisson: ${local} ${sim.goles_local} - ${sim.goles_visitante} ${visitor}.` });
-
-                let timelineHtml = timelineEvents.map(ev => `
-                    <div class="timeline-item ${ev.class}">
-                        <div class="timeline-badge">${ev.icon}</div>
-                        <div>
-                            <strong>Minuto ${ev.minuto}:</strong> ${ev.desc}
-                        </div>
-                    </div>
-                `).join("");
-
-                card.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.6rem; margin-bottom: 0.85rem;">
-                        <h3 style="font-weight: 800; font-size: 1.05rem; color: var(--accent-cyan);">Simulación ${sim.simulacion_id}: ${sim.escenario}</h3>
-                        <span style="font-size: 1.3rem; font-weight: 900; color: var(--accent-cyan);">${local} ${sim.goles_local} - ${sim.goles_visitante} ${visitor}</span>
-                    </div>
-                    <div style="margin-bottom: 0.85rem; font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.3rem;">
-                        <div><strong>Posesión de Balón:</strong> ${local} ${sim.posesion_local_porcentaje}% - ${100 - sim.posesion_local_porcentaje}% ${visitor} | Corners: ${sim.tiros_esquina_local} - ${sim.tiros_esquina_visitante}</div>
-                    </div>
-                    <div>
-                        <h4 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 0.03em;">Línea de Tiempo del Encuentro:</h4>
-                        <div class="timeline-container">
-                            ${timelineHtml}
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        // ==========================================================================
-        // ROM LUDOPATA 1.2 CUSTOM SPORTS SEARCH CHAT LOGIC (WITH PERSISTENT HISTORY)
-        // ==========================================================================
-        let chatHistory = [];
-        try {
-            chatHistory = JSON.parse(localStorage.getItem('rom_chat_history')) || [];
-        } catch(e) {
-            console.error('Error al cargar historial desde localStorage', e);
-        }
-
-        // Cargar historial de chat cuando se cargue el DOM
-        window.addEventListener('DOMContentLoaded', () => {
-            if (chatHistory.length > 0) {
-                const chatMessages = document.getElementById('chat-messages');
-                chatMessages.innerHTML = ''; // Limpiar el saludo por defecto
-                chatHistory.forEach(msg => {
-                    appendChatMessage(msg.sender, msg.text, null, false);
+            if (hPlayers.length > 0) {
+                hPlayers.slice(0, 11).forEach(p => {
+                    listLoc.innerHTML += `<div class="player-chip"><span>${p}</span><span class="player-pos">TIT</span></div>`;
                 });
+            } else {
+                listLoc.innerHTML = '<div style="font-size: 11px; color: var(--text-muted);">Alineación táctica proyectada</div>';
+            }
+
+            if (vPlayers.length > 0) {
+                vPlayers.slice(0, 11).forEach(p => {
+                    listVis.innerHTML += `<div class="player-chip"><span>${p}</span><span class="player-pos" style="color: var(--accent-cyan);">TIT</span></div>`;
+                });
+            } else {
+                listVis.innerHTML = '<div style="font-size: 11px; color: var(--text-muted);">Alineación táctica proyectada</div>';
+            }
+
+            // ESCENARIOS ESTOCÁSTICOS (10)
+            const scList = document.getElementById('scenarios-list');
+            scList.innerHTML = '';
+            const sims = data.simulaciones || [];
+            sims.forEach(s => {
+                const item = document.createElement('div');
+                item.className = 'scenario-item';
+                item.innerHTML = `
+                    <div>
+                        <div class="scenario-name">Escenario ${s.id || ''}: ${s.nombre || 'Simulación estocástica'}</div>
+                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">${s.contexto || ''}</div>
+                    </div>
+                    <div class="scenario-score">${s.marcador_local ?? 0} - ${s.marcador_visitante ?? 0}</div>
+                `;
+                scList.appendChild(item);
+            });
+
+            // REPORTE COMPLETO MARKDOWN
+            const repCont = document.getElementById('report-content');
+            if (data.reporte && typeof marked !== 'undefined') {
+                repCont.innerHTML = marked.parse(data.reporte);
+            } else {
+                repCont.innerHTML = `<pre style="white-space: pre-wrap;">${data.reporte || 'Reporte generado.'}</pre>`;
+            }
+        }
+
+        // ── TABS NAVEGACIÓN RESULTADOS ──
+        document.querySelectorAll('.result-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.result-tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        // ── NAVEGACIÓN INFERIOR (PWA/APK) ──
+        document.getElementById('nav-analizador').addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        document.getElementById('nav-partidos').addEventListener('click', () => {
+            document.querySelector('.featured-section').scrollIntoView({ behavior: 'smooth' });
+        });
+        document.getElementById('nav-historial').addEventListener('click', async () => {
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                alert(`Historial en SQLite/JSON: ${data.count || 0} análisis completos guardados en la memoria del dispositivo.`);
+            } catch(e) {
+                alert('No se pudo abrir el historial.');
             }
         });
 
-        function saveMessageToHistory(sender, text) {
-            chatHistory.push({ sender, text });
-            try {
-                localStorage.setItem('rom_chat_history', JSON.stringify(chatHistory));
-            } catch(e) {
-                console.error('Error al guardar mensaje en localStorage', e);
-            }
-        }
-
-        function sendChatMessage(event) {
-            event.preventDefault();
-            const inputEl = document.getElementById('chat-input');
-            const message = inputEl.value.trim();
-            if (!message) return;
-            
-            inputEl.value = '';
-            
-            // 1. Add user message bubble y guardar en historial
-            appendChatMessage('user', message);
-            saveMessageToHistory('user', message);
-            
-            // 2. Prepare assistant response container with unique ID
-            const assistantMsgId = 'assistant-msg-' + Date.now();
-            appendChatMessage('assistant', '', assistantMsgId);
-            
-            const statusBox = document.getElementById('chat-status-box');
-            const statusText = document.getElementById('chat-status-text');
-            statusBox.classList.remove('hidden');
-            statusText.textContent = 'Analizando consulta...';
-            
-            // 3. Connect EventSource (using GET route carrying message query string)
-            const source = new EventSource('/api/chat?message=' + encodeURIComponent(message));
-            let fullText = '';
-            const assistantBubble = document.getElementById(assistantMsgId + '-text');
-            
-            source.onmessage = function(e) {
-                try {
-                    const data = JSON.parse(e.data);
-                    if (data.status === 'searching') {
-                        statusBox.classList.remove('hidden');
-                        statusText.textContent = data.message;
-                    } else if (data.status === 'context_found') {
-                        statusBox.classList.remove('hidden');
-                        statusText.textContent = data.message;
-                    } else if (data.status === 'no_results') {
-                        statusBox.classList.remove('hidden');
-                        statusText.textContent = data.message;
-                    } else if (data.status === 'generating') {
-                        statusBox.classList.add('hidden');
-                    } else if (data.status === 'chunk') {
-                        statusBox.classList.add('hidden');
-                        fullText += data.text;
-                        // Render stream as clean markdown
-                        assistantBubble.innerHTML = marked.parse(fullText);
-                        const chatMessages = document.getElementById('chat-messages');
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
-                    } else if (data.status === 'done') {
-                        source.close();
-                        statusBox.classList.add('hidden');
-                        // Guardar respuesta final en historial
-                        saveMessageToHistory('assistant', fullText);
-                    } else if (data.status === 'error') {
-                        source.close();
-                        statusBox.classList.add('hidden');
-                        assistantBubble.innerHTML = `<span style="color: var(--red-loss);">Error: ${data.message}</span>`;
-                    }
-                } catch (err) {
-                    console.error('Error al procesar SSE:', err);
-                }
-            };
-            
-            source.onerror = function(err) {
-                console.error('Error en el canal EventSource:', err);
-                source.close();
-                statusBox.classList.add('hidden');
-                if (!fullText) {
-                    assistantBubble.innerHTML = `<span style="color: var(--red-loss);">Error de conexión con el motor de IA.</span>`;
-                }
-            };
-        }
-        
-        function appendChatMessage(sender, text, id = null, saveToLocal = true) {
-            const chatMessages = document.getElementById('chat-messages');
-            const bubble = document.createElement('div');
-            bubble.className = 'chat-message ' + sender;
-            
-            let styles = '';
-            let senderLabel = '';
-            let labelColor = '';
-            
-            if (sender === 'user') {
-                styles = 'background: rgba(0, 200, 150, 0.05); border: 1px solid rgba(0, 200, 150, 0.2); border-radius: 8px; padding: 1rem; max-width: 85%; align-self: flex-end;';
-                senderLabel = 'TÚ';
-                labelColor = 'var(--accent-cyan)';
-            } else {
-                styles = 'background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-card); border-radius: 8px; padding: 1rem; max-width: 85%;';
-                senderLabel = 'ROM LUDOPATA 1.2';
-                labelColor = 'var(--accent-primary)';
-            }
-            
-            bubble.setAttribute('style', styles);
-            if (id) bubble.id = id;
-            
-            bubble.innerHTML = `
-                <div style="font-size: 0.75rem; font-weight: 800; color: ${labelColor}; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em;">${senderLabel}</div>
-                <div id="${id ? id + '-text' : ''}" style="font-size: 0.95rem; line-height: 1.6;">${text ? marked.parse(text) : '<span style="color: var(--text-muted);">Escribiendo...</span>'}</div>
-            `;
-            
-            chatMessages.appendChild(bubble);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-    
-        function clearChat() {
-            const chatMessages = document.getElementById('chat-messages');
-            chatMessages.innerHTML = `
-                <div class="chat-message assistant" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-card); border-radius: 8px; padding: 1rem; max-width: 85%;">
-                    <div style="font-size: 0.75rem; font-weight: 800; color: var(--accent-primary); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em;">ROM LUDOPATA 1.2</div>
-                    <div style="font-size: 0.95rem; line-height: 1.6;">¡Hola! Soy tu asistente de apuestas deportivas avanzadas. Puedo buscar información en internet en tiempo real. Pregúntame sobre lesionados de hoy, cuotas de valor, análisis de árbitros o pronósticos específicos de cualquier encuentro. ¿En qué te puedo ayudar hoy?</div>
-                </div>
-            `;
-            chatHistory = [];
-            try {
-                localStorage.removeItem('rom_chat_history');
-            } catch(e) {
-                console.error('Error al limpiar localStorage', e);
-            }
-        }
-    </script>
-    <!-- Register PWA Service Worker -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then((reg) => console.log('Service Worker registrado con éxito:', reg.scope))
-                    .catch((err) => console.error('Error al registrar el Service Worker:', err));
-            });
-        }
+        // Cargar partidos al iniciar la app
+        window.addEventListener('DOMContentLoaded', loadFeaturedMatches);
     </script>
 </body>
 </html>

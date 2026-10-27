@@ -266,10 +266,13 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin
             line_to_parse = line_to_parse.replace(";", ",").replace(".", ",")
             raw_players = line_to_parse.split(",")
             players = []
+            news_block = ['alineacion', 'alineaciones', 'vs', 'partido', 'h2h', 'noticias', 'champions', 'league', 'uefa', 'vivo', 'ultimos', 'titular', 'once']
             for p in raw_players:
                 p_clean = p.strip()
-                if len(p_clean) > 3 and not p_clean.isdigit():
-                    players.append(p_clean)
+                # Filtrar estrictamente para evitar que párrafos de noticias se guarden como jugadores
+                if len(p_clean) > 2 and len(p_clean) <= 26 and len(p_clean.split()) <= 4 and not p_clean.isdigit():
+                    if not any(w in p_clean.lower() for w in news_block):
+                        players.append(p_clean)
             return players
 
         local_players = extract_players(local_team)

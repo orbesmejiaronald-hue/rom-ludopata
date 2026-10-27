@@ -11,23 +11,17 @@ class DataCollector:
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
         }
 
-    def search_duckduckgo(self, query: str, max_results: int = 5):
+    def search_duckduckgo(self, query: str, max_results: int = 4):
         """
-        Busca en DuckDuckGo usando la librería oficial 'duckduckgo_search' (DDGS) de forma gratuita.
-        Soporta fallback a raspado HTML si falla.
+        Busca en DuckDuckGo usando la librería moderna DDGS. Cero bloqueos y respuesta ultra rápida.
         """
-        import time
-        import random
-        
         print(f"[DataCollector] Buscando en internet: '{query}'...")
-        time.sleep(random.uniform(0.1, 0.5))
-        
-        # Intento 1: Usar DDGS de la librería oficial ddgs / duckduckgo_search
         try:
             try:
                 from ddgs import DDGS
             except ImportError:
                 from duckduckgo_search import DDGS
+
             with DDGS() as ddgs:
                 raw_results = list(ddgs.text(query, max_results=max_results))
                 if raw_results:
@@ -40,67 +34,8 @@ class DataCollector:
                     if formatted_results:
                         return formatted_results
         except Exception as e:
-            print(f"[DataCollector] Advertencia con DDGS ({e}). Intentando fallback a raspado HTML...")
-        
-        # Intento 2: Fallback a raspado directo HTML
-        url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(query)}"
-        user_agents = [
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0",
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
-        ]
-        
-        for attempt in range(3):
-            try:
-                headers = {
-                    "User-Agent": user_agents[attempt % len(user_agents)],
-                    "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
-                }
-                response = requests.get(url, headers=headers, timeout=10)
-                if response.status_code == 200:
-                    soup = BeautifulSoup(response.text, "html.parser")
-                    results = []
-                    seen_urls = set()
-                    
-                    for a in soup.find_all("a", href=re.compile(r"uddg=")):
-                        href = a.get("href")
-                        match = re.search(r"uddg=(https?://[^&]+)", href)
-                        if not match:
-                            match = re.search(r"uddg=(https?%3A%2F%2F[^&]+)", href)
-                            
-                        if match:
-                            actual_url = urllib.parse.unquote(match.group(1))
-                            if actual_url in seen_urls:
-                                continue
-                                
-                            parent = a.find_parent("div", class_=re.compile(r"result"))
-                            snippet = ""
-                            if parent:
-                                snippet_el = parent.find(class_=re.compile(r"snippet"))
-                                if snippet_el:
-                                    snippet = snippet_el.get_text(strip=True)
-                            
-                            if not snippet and len(a.get_text(strip=True)) > 20:
-                                snippet = a.get_text(strip=True)
-                                
-                            seen_urls.add(actual_url)
-                            results.append({
-                                "url": actual_url,
-                                "snippet": snippet
-                            })
-                            if len(results) >= max_results:
-                                break
-                    if results:
-                        return results
-                    
-                print(f"[DataCollector] DuckDuckGo HTML devolvió estado {response.status_code} o sin resultados. Reintentando...")
-                time.sleep(1 + random.random())
-            except Exception as e:
-                print(f"[DataCollector] Error en intento {attempt+1} buscando '{query}': {e}")
-                time.sleep(1)
-        
+            print(f"[DataCollector] Nota de búsqueda ({e}). Continuando con datos disponibles.")
+
         return []
 
     def fetch_page_text(self, url: str) -> str:
@@ -108,7 +43,7 @@ class DataCollector:
         Obtiene el texto legible de una página web para analizarlo.
         """
         try:
-            response = requests.get(url, headers=self.headers, timeout=8)
+            response = requests.get(url, headers=self.headers, timeout=4)
             if response.status_code != 200:
                 return ""
             soup = BeautifulSoup(response.text, "html.parser")
@@ -133,13 +68,22 @@ class DataCollector:
         
         match_query = f"{local_team} vs {visitor_team}"
         
+        # ── INTEGRACIÓN EN VIVO: Consultar LiveDataProvider (ESPN API Oficial en Tiempo Real) ──
+        try:
+            from live_data_provider import LiveDataProvider
+            provider = LiveDataProvider()
+            live_match = provider.find_match_by_teams(local_team, visitor_team)
+        except Exception as e:
+            print(f"[DataCollector] Nota LiveDataProvider: {e}")
+            live_match = {}
+        
         queries = {
-            "flashscore_data": (f"site:flashscore.pe OR site:flashscore.es OR site:sofascore.com OR site:besoccer.com {match_query} alineaciones arbitro estadio", 6),
-            "match_info": (f"{match_query} ultimos partidos resultados estadisticas corners tarjetas flashscore", 5),
-            "lineups": (f"alineaciones confirmadas {match_query} once inicial xi titulares flashscore", 5),
-            "referee": (f"árbitro {match_query} flashscore uefa", 5),
-            "stadium_weather": (f"estadio sede {match_query} clima flashscore", 5),
-            "player_rumors": (f"{match_query} lesionados bajas suspendidos noticias", 4)
+            "flashscore_data": (f"{match_query} futbol flashscore alineaciones", 4),
+            "match_info": (f"{match_query} ultimos partidos resultados estadisticas", 4),
+            "lineups": (f"{match_query} alineaciones titulares bajas", 4),
+            "referee": (f"{match_query} arbitro designado", 3),
+            "stadium_weather": (f"{match_query} estadio clima pronostico", 3),
+            "player_rumors": (f"{match_query} lesionados noticias bajas", 3)
         }
         
         search_results = {}
@@ -165,8 +109,28 @@ class DataCollector:
             "referee": [r["snippet"] for r in search_results.get("referee", []) if r.get("snippet")],
             "stadium_and_weather": [r["snippet"] for r in search_results.get("stadium_weather", []) if r.get("snippet")],
             "player_rumors": [r["snippet"] for r in search_results.get("player_rumors", []) if r.get("snippet")],
-            "flashscore_data": [r["snippet"] for r in search_results.get("flashscore_data", []) if r.get("snippet")]
+            "flashscore_data": [r["snippet"] for r in search_results.get("flashscore_data", []) if r.get("snippet")],
+            "alineaciones_oficiales": False,
+            "live_match_found": False
         }
+
+        # Inyectar datos oficiales en vivo si se encontraron en ESPN
+        if live_match and live_match.get("has_official_lineups"):
+            print(f"[DataCollector] ¡Alineaciones oficiales confirmadas inyectadas directamente de ESPN para {local_team} vs {visitor_team}!")
+            h_names = [p["name"] for p in live_match.get("home_lineup", [])]
+            a_names = [p["name"] for p in live_match.get("away_lineup", [])]
+            raw_data["lineups"] = [
+                f"{local_team} (Titulares Oficiales): {', '.join(h_names)}",
+                f"{visitor_team} (Titulares Oficiales): {', '.join(a_names)}"
+            ]
+            raw_data["alineaciones_oficiales"] = True
+            raw_data["live_match_found"] = True
+            if live_match.get("stadium"):
+                raw_data["stadium_and_weather"].insert(0, f"Estadio Oficial: {live_match['stadium']}")
+            if live_match.get("referee"):
+                raw_data["referee"].insert(0, f"Árbitro Oficial: {live_match['referee']}")
+            if live_match.get("odds"):
+                raw_data["draftkings_odds"] = live_match["odds"]
 
         # Descargar el texto completo de las páginas más relevantes prioritariamente de Flashscore, SofaScore y FotMob
         urls_to_scrape = []

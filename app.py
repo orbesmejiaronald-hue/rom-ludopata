@@ -142,6 +142,48 @@ def chat():
     response.headers["X-Accel-Buffering"] = "no"
     return response
 
+@app.route("/api/matches/today")
+def matches_today():
+    try:
+        from live_data_provider import LiveDataProvider, LEAGUES
+        league = request.args.get("league", "ita.1").strip()
+        provider = LiveDataProvider()
+        matches = provider.get_today_matches(league)
+        return Response(json.dumps({
+            "status": "success",
+            "league": league,
+            "league_name": LEAGUES.get(league, {}).get("name", league),
+            "count": len(matches),
+            "matches": matches
+        }, ensure_ascii=False), mimetype="application/json")
+    except Exception as e:
+        return Response(json.dumps({"status": "error", "message": str(e)}), status=500, mimetype="application/json")
+
+@app.route("/api/matches/featured")
+def matches_featured():
+    try:
+        from live_data_provider import LiveDataProvider
+        provider = LiveDataProvider()
+        featured = provider.get_featured_matches(limit=5)
+        return Response(json.dumps({"status": "success", "count": len(featured), "matches": featured}, ensure_ascii=False), mimetype="application/json")
+    except Exception as e:
+        return Response(json.dumps({"status": "error", "message": str(e)}), status=500, mimetype="application/json")
+
+@app.route("/api/history")
+def history():
+    try:
+        import os
+        history_path = "historical_simulations.json"
+        if os.path.exists(history_path):
+            with open(history_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if not isinstance(data, list):
+                    data = []
+            return Response(json.dumps({"status": "success", "count": len(data), "history": data}, ensure_ascii=False), mimetype="application/json")
+        return Response(json.dumps({"status": "success", "count": 0, "history": []}), mimetype="application/json")
+    except Exception as e:
+        return Response(json.dumps({"status": "error", "message": str(e)}), status=500, mimetype="application/json")
+
 @app.route("/api/backtest")
 def backtest():
     try:

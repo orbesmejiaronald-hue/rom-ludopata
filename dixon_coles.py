@@ -299,11 +299,46 @@ class DixonColesModel:
                 else:
                     away_win += prob_matrix[x][y]
                     
+        # ── MEJORA MATEMÁTICA: Mercados derivados de alta frecuencia (0ms lag) ──
+        over_0_5 = 0.0
+        over_1_5 = 0.0
+        over_2_5 = 0.0
+        over_3_5 = 0.0
+        btts = 0.0
+        cs_home = 0.0
+        cs_away = 0.0
+        scores_list = []
+
+        for x in range(max_goals):
+            for y in range(max_goals):
+                p = prob_matrix[x][y]
+                tot_goals = x + y
+                if tot_goals > 0.5: over_0_5 += p
+                if tot_goals > 1.5: over_1_5 += p
+                if tot_goals > 2.5: over_2_5 += p
+                if tot_goals > 3.5: over_3_5 += p
+                if x >= 1 and y >= 1: btts += p
+                if y == 0: cs_home += p
+                if x == 0: cs_away += p
+                scores_list.append((f"{x}-{y}", p * 100))
+
+        # Top 5 marcadores más probables
+        scores_list.sort(key=lambda s: s[1], reverse=True)
+        top_scores = [{"score": s[0], "prob": round(s[1], 2)} for s in scores_list[:5]]
+
         return {
             "home_lambda": lmbda,
             "away_lambda": mu,
             "home_win_probability": home_win * 100,
             "draw_probability": draw * 100,
             "away_win_probability": away_win * 100,
+            "over_0_5_probability": over_0_5 * 100,
+            "over_1_5_probability": over_1_5 * 100,
+            "over_2_5_probability": over_2_5 * 100,
+            "over_3_5_probability": over_3_5 * 100,
+            "btts_probability": btts * 100,
+            "clean_sheet_home_probability": cs_home * 100,
+            "clean_sheet_away_probability": cs_away * 100,
+            "top_scores": top_scores,
             "matrix": prob_matrix
         }

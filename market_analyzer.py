@@ -269,6 +269,40 @@ Devuelve tu respuesta únicamente en un formato JSON estructurado como este (sin
                 "recomendacion_apuesta": f"Apuesta de valor teórica: {h_pick} o Más de 1.5 goles"
             }
 
+        # ── MEJORA MATEMÁTICA: Modelo Cuantitativo +EV y Kelly Fraccional (Sharp Bettor) ──
+        def calc_ev_kelly(prob_pct, cuota_mercado, fraction=0.25):
+            p = float(prob_pct) / 100.0
+            q = 1.0 - p
+            b = float(cuota_mercado) - 1.0
+            if b <= 0.001 or p <= 0.001:
+                return {"ev_percent": 0.0, "stake_sugerido_pct": 0.0, "hay_valor": False, "categoria": "Sin Valor"}
+            ev = (p * b - q) * 100.0
+            full_kelly = max(0.0, (b * p - q) / b)
+            frac_kelly = round(full_kelly * fraction * 100.0, 2)
+            is_val = ev > 1.5
+            cat = "Valor Alto (+EV)" if ev >= 5.0 else ("Valor Moderado (+EV)" if ev > 1.5 else "Cuota Ajustada / Trampa")
+            return {
+                "ev_percent": round(ev, 2),
+                "cuota_mercado": round(cuota_mercado, 2),
+                "cuota_justa": round(1.0 / p, 2) if p > 0 else 99.0,
+                "stake_sugerido_pct": frac_kelly,
+                "hay_valor": is_val,
+                "categoria": cat
+            }
+
+        cuota_loc = float(market_data.get("cuota_local_estimada", 2.0))
+        cuota_emp = float(market_data.get("cuota_empate_estimada", 3.2))
+        cuota_vis = float(market_data.get("cuota_visitante_estimada", 3.5))
+        cuota_o25 = float(market_data.get("cuota_over_2_5_estimada", 1.95))
+
+        analisis_ev = {
+            "local_1": calc_ev_kelly(prob_local, cuota_loc),
+            "empate_X": calc_ev_kelly(prob_draw, cuota_emp),
+            "visitante_2": calc_ev_kelly(prob_visitor, cuota_vis),
+            "over_2_5": calc_ev_kelly(prob_over_2_5, cuota_o25)
+        }
+        market_data["analisis_cuantitativo_ev"] = analisis_ev
+
         # Consolidar todas las estadísticas e información de mercado
         stats_and_market = {
             "estadisticas_simuladas": {

@@ -464,6 +464,108 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
         yield {"step": 5, "status": "reporte", "message": "Generando reporte de pronóstico final estructurado..."}
         report = self.report_generator.generate_report(local_team, visitor_team, raw_data, tactics, simulations_list, market_analysis)
         
+        # ── CÁPSULAS DE PRONÓSTICO INTELIGENTE 2026 (Formato Cards & Badges Cuantitativos) ──
+        stats_sim = market_analysis.get("estadisticas_simuladas", {})
+        mkt_data = market_analysis.get("datos_mercado", {})
+        ev_analysis = mkt_data.get("analisis_cuantitativo_ev", {})
+
+        # 1. Cápsula 1X2 / Veredicto de Ganador
+        p_loc = stats_sim.get("probabilidad_local_porcentaje", 0.0)
+        p_emp = stats_sim.get("probabilidad_empate_porcentaje", 0.0)
+        p_vis = stats_sim.get("probabilidad_visitante_porcentaje", 0.0)
+        
+        best_ev_pick = None
+        best_ev_val = -999.0
+        for opt_key in ["local_1", "empate_X", "visitante_2"]:
+            opt_data = ev_analysis.get(opt_key, {})
+            ev_val = opt_data.get("ev_percent", -999.0)
+            if ev_val > best_ev_val:
+                best_ev_val = ev_val
+                best_ev_pick = (opt_key, opt_data)
+
+        if best_ev_val >= 2.0:
+            nombre_opt = local_team if best_ev_pick[0] == "local_1" else (visitor_team if best_ev_pick[0] == "visitante_2" else "Empate")
+            capsula_1x2 = {
+                "tipo": "VALOR_ENCONTRADO",
+                "titulo": f"Oportunidad de Valor (+EV): {nombre_opt}",
+                "pick": nombre_opt,
+                "ev_percent": best_ev_val,
+                "cuota_mercado": best_ev_pick[1].get("cuota_mercado", 2.0),
+                "stake_kelly_sugerido": best_ev_pick[1].get("stake_sugerido_pct", 1.0),
+                "justificacion": f"El mercado paga cuota {best_ev_pick[1].get('cuota_mercado', 2.0)} frente a una cuota justa de {best_ev_pick[1].get('cuota_justa', 2.0)} (+{best_ev_val}% de ventaja sobre la casa)."
+            }
+        else:
+            favorito = local_team if p_loc >= p_vis else visitor_team
+            fav_prob = max(p_loc, p_vis)
+            capsula_1x2 = {
+                "tipo": "SIN_VALOR_GANADOR",
+                "titulo": "⚠️ EVITAR GANADOR 1X2 (Cuotas Sobreajustadas)",
+                "pick": f"Doble Oportunidad ({favorito} o Empate)",
+                "ev_percent": best_ev_val,
+                "cuota_mercado": mkt_data.get("cuota_local_estimada" if p_loc >= p_vis else "cuota_visitante_estimada", 1.5),
+                "stake_kelly_sugerido": 0.0,
+                "justificacion": f"Las casas de apuestas pagan cuotas sin margen positivo en 1X2. Aunque {favorito} tiene {fav_prob:.1f}% de victoria, la rentabilidad matemática (+EV) está en mercados secundarios de Goles y Córners."
+            }
+
+        # 2. Cápsula de Goles (Over/Under y BTTS)
+        p_o15 = stats_sim.get("probabilidad_over_1_5_porcentaje", 75.0)
+        p_o25 = stats_sim.get("probabilidad_over_2_5_porcentaje", 50.0)
+        lambda_tot = stats_params.get("local_expected_goals", 1.5) + stats_params.get("visitor_expected_goals", 1.2)
+        
+        if p_o15 >= 75.0:
+            pick_goles = "Más de 1.5 Goles"
+            prob_goles = p_o15
+        elif p_o25 >= 55.0:
+            pick_goles = "Más de 2.5 Goles"
+            prob_goles = p_o25
+        else:
+            pick_goles = "Menos de 2.5 Goles"
+            prob_goles = 100.0 - p_o25
+
+        capsula_goles = {
+            "titulo": "Pronóstico de Goles Totales",
+            "pick": pick_goles,
+            "probabilidad": round(prob_goles, 1),
+            "goles_esperados_combinados": round(lambda_tot, 2),
+            "justificacion": f"xG combinado esperado de {lambda_tot:.2f} goles. Probabilidad calculada de {prob_goles:.1f}% mediante Poisson bivariada y Monte Carlo."
+        }
+
+        # 3. Cápsula de Córners
+        p_corn = stats_sim.get("probabilidad_over_8_5_corners_porcentaje", 65.0)
+        tot_corn = stats_sim.get("promedio_tiros_esquina_local", 5.0) + stats_sim.get("promedio_tiros_esquina_visitante", 4.0)
+        capsula_corners = {
+            "titulo": "Pronóstico de Tiros de Esquina",
+            "pick": "Más de 8.5 Córners" if p_corn >= 55.0 else "Menos de 10.5 Córners",
+            "probabilidad": round(p_corn if p_corn >= 55.0 else (100.0 - p_corn), 1),
+            "promedio_esperado": round(tot_corn, 1),
+            "justificacion": f"Promedio estimado de {tot_corn:.1f} córners (Local: {stats_sim.get('promedio_tiros_esquina_local', 5.0):.1f} | Visitante: {stats_sim.get('promedio_tiros_esquina_visitante', 4.0):.1f})."
+        }
+
+        # 4. Cápsula de Tarjetas, Árbitro y Faltas
+        arb_nombre = environment.get("arbitro_nombre", "Oficial Designado")
+        arb_tarjetero = environment.get("arbitro_tarjetero", "No")
+        p_cards = stats_sim.get("probabilidad_over_3_5_tarjetas_porcentaje", 60.0)
+        avg_cards = stats_sim.get("promedio_tarjetas_amarillas", 4.0)
+        avg_fouls = stats_sim.get("promedio_faltas", 24.0)
+
+        capsula_disciplina = {
+            "titulo": "Pronóstico Disciplinario y Tarjetas",
+            "pick": "Más de 3.5 Tarjetas" if p_cards >= 55.0 else "Menos de 4.5 Tarjetas",
+            "probabilidad": round(p_cards if p_cards >= 55.0 else (100.0 - p_cards), 1),
+            "arbitro": arb_nombre,
+            "perfil_arbitral": "Tarjetero / Riguroso" if arb_tarjetero.lower() in ["sí", "si"] or avg_cards >= 4.5 else "Permisivo / Fluido",
+            "promedio_tarjetas": round(avg_cards, 1),
+            "promedio_faltas_estimadas": round(avg_fouls, 1),
+            "justificacion": f"El colegiado promedia {avg_cards:.1f} tarjetas por juego en un contexto de fricción con {avg_fouls:.0f} faltas proyectadas."
+        }
+
+        capsulas = {
+            "ganador_1x2": capsula_1x2,
+            "goles": capsula_goles,
+            "corners": capsula_corners,
+            "disciplina_arbitro": capsula_disciplina
+        }
+
         # Guardar en el historial estructurado local
         self._save_to_history(local_team, visitor_team, tactics, simulations_list, market_analysis, environment)
         
@@ -475,7 +577,9 @@ Extrae los siguientes detalles precisos y devuélvelos únicamente en un formato
             "simulaciones": simulations,
             "tactics": tactics,
             "market_analysis": market_analysis,
-            "environment": environment
+            "environment": environment,
+            "capsulas_pronostico": capsulas,
+            "live_odds": raw_data.get("draftkings_odds", {})
         }
 
     def _is_neutral_venue(self, local: str, visitor: str, raw_data: dict) -> bool:
