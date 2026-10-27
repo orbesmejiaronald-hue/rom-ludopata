@@ -13,3 +13,10 @@ docker-compose.yml
 ngrok.exe
 *.log
 *.exe
+*.bak
+*.apk
+android-app/
+jdk17/
+historical_simulations.json
+backups/
+scratch/
